@@ -49,17 +49,9 @@ function escapeHtml(text) {
  * Sets up all event listeners for the application
  */
 function setupEventListeners() {
-  // API key management
-  const saveApiKeyBtn = document.getElementById('saveApiKey');
-  if (saveApiKeyBtn) {
-    saveApiKeyBtn.addEventListener('click', saveApiKey);
-  }
-  
-  const apiKeyInput = document.getElementById('apiKeyInput');
-  if (apiKeyInput) {
-    apiKeyInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') saveApiKey();
-    });
+  // API key management - use the dedicated function from api-key.js
+  if (typeof setupApiKeyEventListeners === 'function') {
+    setupApiKeyEventListeners();
   }
   
   // Image upload functionality

@@ -6,12 +6,12 @@
 
 // Define the modules to load in dependency order
 const modules = [
-  'js/api-key.js',
-  'js/image-upload.js', 
-  'js/comment-moderation.js',
-  'js/storage.js',
-  'js/ui-helpers.js',
-  'js/app.js'
+  'js/api-key.js',        // API key management (consolidated)
+  'js/image-upload.js',   // Image handling and alt-text generation
+  'js/comment-moderation.js', // AI comment analysis
+  'js/storage.js',        // localStorage management
+  'js/ui-helpers.js',     // UI utilities and event handling
+  'js/app.js'            // Main application initialization
 ];
 
 /**
