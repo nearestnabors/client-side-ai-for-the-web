@@ -62,6 +62,12 @@ h1 {
   text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.2);
 }
 
+.post-header p {
+  color: #666;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
 h2 {
   color: #333;
   margin-top: 40px;
@@ -333,4 +339,216 @@ button {
 .site-footer a:hover {
   color: #ff6b00;
   text-decoration: underline;
+}
+
+/* Upload Section Styles */
+.upload-section {
+  padding: 20px 40px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.upload-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+}
+
+.upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.upload-area:hover {
+  border-color: #ff6b00;
+  background: #fff8f0;
+}
+
+.upload-area.dragover {
+  border-color: #ff6b00;
+  background: #fff8f0;
+  transform: scale(1.02);
+}
+
+.upload-content {
+  pointer-events: none;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.upload-area p {
+  color: #666;
+  margin: 0;
+  font-size: 16px;
+}
+
+.image-preview {
+  margin-top: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+}
+
+.alt-text-section {
+  padding: 20px;
+}
+
+.alt-text-section h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.alt-text-result {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  min-height: 60px;
+  border-left: 4px solid #ff6b00;
+}
+
+.alt-text-result .loading {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #ff6b00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.alt-text-result .alt-text {
+  color: #333;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.regenerate-btn {
+  background: #f0f0f0;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.regenerate-btn:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
+.cancel-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-left: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #cc3333;
+}
+
+/* API Key Section Styles */
+.api-key-section {
+  background: #f8f9fa;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.api-key-section h3 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.api-key-section p {
+  margin: 8px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.api-key-input {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.api-key-input input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: monospace;
+}
+
+.api-key-input input:focus {
+  outline: none;
+  border-color: #ff6b00;
+}
+
+.save-key-btn {
+  background: #ff6b00;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  flex: none;
+}
+
+.save-key-btn:hover {
+  background: #ff9500;
+}
+
+.api-key-help {
+  font-size: 13px !important;
+  color: #888 !important;
+  margin-top: 8px !important;
+}
+
+.api-key-help a {
+  color: #ff6b00;
+  text-decoration: none;
+}
+
+.api-key-help a:hover {
+  text-decoration: underline;
+}
+
+/* Form section spacing */
+.form-group h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
 }

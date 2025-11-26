@@ -3,28 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Origin Trial Token for Chrome Prompt API -->
-  <!-- To get your token, visit: https://developer.chrome.com/origintrials/#/view_trial/2533837740349325313 -->
-  <!-- Replace the content below with your origin trial token -->
-  <meta http-equiv="origin-trial" content="AosK6i+dT+3qSOMkrXTpSlTVRlj5Q8+bK9Jzg9hTQ4IfZXtwtFPSky6XBFsELcb4nynd8Me/QFqjeNsa3Yd/GQkAAABdeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjgwMDAiLCJmZWF0dXJlIjoiQUlQcm9tcHRBUElNdWx0aW1vZGFsSW5wdXQiLCJleHBpcnkiOjE3NzQzMTA0MDB9">
-  <title>Rate my Halloween 2011 costume!</title>
+  <title>AI-Powered Image Analysis & Comment Moderation</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <div class="post-header">
-      <h1>🎃 Rate my Halloween 2011 costume!🎃</h1>
+      <h1>🤖 AI-Powered Image Analysis & Comment Moderation</h1>
+      <p>Upload an image and let Google's Gemini AI analyze it and generate alt-text. Add comments and see how AI moderates them for constructive conversation.</p>
     </div>
 
-    <div class="image-wrapper">
-      <img src="halloween.jpg" alt="Halloween image" class="post-image">
+    <div class="upload-section">
+      <h2>📸 Upload Image</h2>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-content">
+          <div class="upload-icon">📁</div>
+          <p>Click to upload an image or drag and drop here</p>
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+      </div>
+      <div id="imagePreview" class="image-preview" style="display: none;">
+        <img id="previewImg" class="preview-image" alt="Uploaded image">
+        <div id="altTextSection" class="alt-text-section">
+          <h3>🔍 AI-Generated Alt Text</h3>
+          <div id="altTextResult" class="alt-text-result">
+            <div class="loading">Analyzing image with Gemini AI...</div>
+          </div>
+          <button id="regenerateAltText" class="regenerate-btn" style="display: none;">🔄 Regenerate Alt Text</button>
+        </div>
+      </div>
     </div>
 
     <div class="post-content">
-      <div id="apiStatus" class="api-status">Checking Chrome Prompt API availability...</div>
+      <div id="apiStatus" class="api-status">Configure your Google AI API key to get started...</div>
+
+    <div class="api-key-section" id="apiKeySection">
+      <h3>🔑 Google AI Configuration</h3>
+      <p>Enter your Google AI API key to enable image analysis and comment moderation:</p>
+      <div class="api-key-input">
+        <input type="password" id="apiKeyInput" placeholder="Enter your Google AI API key">
+        <button id="saveApiKey" class="save-key-btn">Save Key</button>
+      </div>
+      <p class="api-key-help">
+        Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+      </p>
+    </div>
 
     <form id="commentForm">
       <div class="form-group">
+        <h3>💬 Add a Comment</h3>
         <textarea 
           id="comment" 
           name="comment" 
