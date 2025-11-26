@@ -23,10 +23,13 @@ function updateSubmitButton() {
 function updateUIState() {
   updateSubmitButton();
   
-  // Show or hide the API key section
+  // Show or hide the API key section based on API key availability
   const apiKeySection = document.getElementById('apiKeySection');
   if (apiKeySection) {
-    if (geminiApiKey) {
+    const hasApiKey = isApiKeyAvailable && isApiKeyAvailable() || !!geminiApiKey;
+    console.log(`🔍 Updating UI state - API key available: ${hasApiKey}`);
+    
+    if (hasApiKey) {
       apiKeySection.style.display = 'none';
     } else {
       apiKeySection.style.display = 'block';
@@ -93,6 +96,28 @@ function setupEventListeners() {
     });
   }
   
+  // Accept and post image
+  const acceptBtn = document.getElementById('acceptAltText');
+  if (acceptBtn) {
+    acceptBtn.addEventListener('click', acceptAndPostImage);
+  }
+  
+  // Cancel image selection
+  const cancelBtn = document.getElementById('cancelImageBtn');
+  if (cancelBtn) {
+    console.log('🔌 Setting up cancel image button event listener');
+    cancelBtn.addEventListener('click', () => {
+      console.log('🖱️ Cancel image button clicked');
+      if (typeof cancelImageSelection === 'function') {
+        cancelImageSelection();
+      } else {
+        console.error('❌ cancelImageSelection function not found');
+      }
+    });
+  } else {
+    console.warn('⚠️ Cancel image button not found during setup');
+  }
+  
   // Comment form handling
   const commentForm = document.getElementById('commentForm');
   if (commentForm) {
@@ -104,9 +129,4 @@ function setupEventListeners() {
     commentInput.addEventListener('input', updateSubmitButton);
   }
   
-  // Clear all comments button
-  const clearAllBtn = document.getElementById('clearAllBtn');
-  if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', clearAllComments);
-  }
 }

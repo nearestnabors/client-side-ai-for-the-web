@@ -51,11 +51,6 @@ function addComment(commentText) {
   // Save all comments to localStorage
   saveComments();
   
-  // Show the clear all button
-  const clearAllBtn = document.getElementById('clearAllBtn');
-  if (clearAllBtn) {
-    clearAllBtn.style.display = 'block';
-  }
   
   // Scroll to the new comment
   commentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -108,35 +103,98 @@ function loadComments() {
         commentsList.appendChild(commentItem);
       });
       
-      // Show the clear all button if there are comments
-      const clearAllBtn = document.getElementById('clearAllBtn');
-      if (clearAllBtn) {
-        clearAllBtn.style.display = 'block';
-      }
     }
   } catch (error) {
     console.error('Error loading comments:', error);
   }
 }
 
+
 /**
- * Clears all comments from display and localStorage
+ * Saves a posted image to localStorage
+ * @param {Object} imageData - The image data to save
  */
-function clearAllComments() {
-  const commentsList = document.getElementById('commentsList');
-  const commentsSection = document.getElementById('commentsSection');
-  const clearAllBtn = document.getElementById('clearAllBtn');
+window.savePostedImage = function savePostedImage(imageData) {
+  console.log('💾 Saving posted image to localStorage...');
   
-  if (!commentsList || !commentsSection) {
-    console.error('Comments section elements not found');
+  let postedImages = [];
+  const saved = localStorage.getItem('postedImages');
+  if (saved) {
+    try {
+      postedImages = JSON.parse(saved);
+    } catch (error) {
+      console.error('Error parsing posted images:', error);
+      postedImages = [];
+    }
+  }
+  
+  postedImages.unshift(imageData); // Add to beginning (newest first)
+  
+  // Keep only the last 5 images to avoid localStorage quota issues
+  if (postedImages.length > 5) {
+    postedImages = postedImages.slice(0, 5);
+  }
+  
+  localStorage.setItem('postedImages', JSON.stringify(postedImages));
+  console.log('✅ Posted image saved');
+}
+
+/**
+ * Loads posted images from localStorage and displays them
+ */
+window.loadPostedImages = function loadPostedImages() {
+  console.log('📂 Loading posted images from localStorage...');
+  
+  const saved = localStorage.getItem('postedImages');
+  if (!saved) {
+    console.log('No posted images found - keeping upload section visible');
     return;
   }
   
-  commentsList.innerHTML = '';
-  commentsSection.style.display = 'none';
-  if (clearAllBtn) {
-    clearAllBtn.style.display = 'none';
+  try {
+    const postedImages = JSON.parse(saved);
+    
+    if (postedImages.length > 0) {
+      console.log(`✅ Found ${postedImages.length} posted images`);
+      
+      postedImages.forEach(imageData => {
+        displayPostedImage(imageData);
+      });
+      
+      // Hide upload section since we have posted images
+      const uploadSection = document.getElementById('uploadSection');
+      if (uploadSection) {
+        uploadSection.style.display = 'none';
+        console.log('📦 Upload section hidden - images already posted');
+      }
+      
+      // Show comment section if images exist
+      showCommentSection();
+    }
+  } catch (error) {
+    console.error('Error loading posted images:', error);
+  }
+}
+
+
+/**
+ * Clears all posted images (called on page refresh according to requirements)
+ */
+window.clearPostedImages = function clearPostedImages() {
+  console.log('🧹 Clearing all posted images from localStorage...');
+  localStorage.removeItem('postedImages');
+  
+  // Show upload section again when images are cleared
+  const uploadSection = document.getElementById('uploadSection');
+  const uploadArea = document.getElementById('uploadArea');
+  if (uploadSection) {
+    uploadSection.style.display = 'block';
+    console.log('📦 Upload section shown - no posted images');
   }
   
-  localStorage.removeItem('comments');
+  // Ensure upload area is visible
+  if (uploadArea) {
+    uploadArea.style.display = 'block';
+    console.log('📦 Upload area shown - ready for new uploads');
+  }
 }

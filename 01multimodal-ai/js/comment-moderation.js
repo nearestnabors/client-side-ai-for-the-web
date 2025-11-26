@@ -186,7 +186,7 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
 }
 
 /**
- * Shows status messages to the user
+ * Shows status messages to the user with enhanced suggestion interface
  * @param {string} type - Status type: 'checking', 'blocked', 'allowed', 'error'
  * @param {string} message - Main message to display
  * @param {string} suggestion - Optional suggestion text for alternatives
@@ -200,13 +200,108 @@ function showStatus(type, message, suggestion = null) {
   statusEl.className = `status show ${type}`;
   statusEl.innerHTML = message;
   
-  if (suggestion) {
+  if (suggestion && type === 'blocked') {
     const suggestionDiv = document.createElement('div');
-    suggestionDiv.className = 'suggestion';
+    suggestionDiv.className = 'suggestion-interface';
     suggestionDiv.innerHTML = `
-      <h3>💡 Try this instead</h3>
-      <p>${escapeHtml(suggestion)}</p>
+      <div class="suggestion-header">
+        <h3>💡 Here's a friendlier way to say it:</h3>
+      </div>
+      <div class="suggestion-content">
+        <textarea class="suggestion-editor" id="suggestionEditor">${escapeHtml(suggestion)}</textarea>
+        <div class="suggestion-actions">
+          <button class="suggestion-btn regenerate-btn" onclick="regenerateSuggestion()">🔄 Regenerate</button>
+          <button class="suggestion-btn submit-btn" onclick="submitSuggestion()">✅ Submit</button>
+        </div>
+      </div>
     `;
     statusEl.appendChild(suggestionDiv);
+  }
+}
+
+/**
+ * Regenerates a new suggestion for the blocked comment
+ */
+window.regenerateSuggestion = function regenerateSuggestion() {
+  console.log('🔄 Regenerating comment suggestion');
+  
+  const commentInput = document.getElementById('comment');
+  if (!commentInput) {
+    console.error('Comment input not found');
+    return;
+  }
+  
+  const originalComment = commentInput.value.trim();
+  if (!originalComment) {
+    console.error('No original comment to regenerate suggestion for');
+    return;
+  }
+  
+  // Show regenerating status
+  showStatus('checking', '🔄 Generating a new suggestion...');
+  
+  // Re-analyze the original comment to get a new suggestion
+  analyzeComment(originalComment)
+    .then(analysis => {
+      if (analysis.isProblematic && analysis.suggestion) {
+        showStatus('blocked', analysis.reason, analysis.suggestion);
+      } else {
+        // If it's no longer problematic, allow submission
+        clearStatus();
+        showStatus('allowed', '✅ Comment looks good now! You can submit it.');
+        setTimeout(clearStatus, 3000);
+      }
+    })
+    .catch(error => {
+      console.error('Error regenerating suggestion:', error);
+      showStatus('error', `❌ Error generating new suggestion: ${error.message}`);
+    });
+}
+
+/**
+ * Submits the suggested comment text
+ */
+window.submitSuggestion = function submitSuggestion() {
+  const suggestionEditor = document.getElementById('suggestionEditor');
+  const commentInput = document.getElementById('comment');
+  
+  if (!suggestionEditor || !commentInput) {
+    console.error('Required elements not found for suggestion submission');
+    return;
+  }
+  
+  const suggestedText = suggestionEditor.value.trim();
+  if (!suggestedText) {
+    console.error('No suggested text to submit');
+    return;
+  }
+  
+  console.log('✅ Submitting AI-suggested comment');
+  
+  // Use the suggested text and post the comment
+  addComment(suggestedText);
+  
+  // Clear form and status
+  commentInput.value = '';
+  clearStatus();
+  
+  // Show success message
+  showStatus('allowed', '✅ Comment posted! Thank you for using the suggested text.');
+  
+  // Update submit button state
+  updateSubmitButton();
+  
+  // Clear success message after a moment
+  setTimeout(clearStatus, 4000);
+}
+
+/**
+ * Clears the status display
+ */
+function clearStatus() {
+  const statusEl = document.getElementById('status');
+  if (statusEl) {
+    statusEl.className = 'status';
+    statusEl.innerHTML = '';
   }
 }

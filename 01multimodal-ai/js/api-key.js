@@ -31,6 +31,16 @@ function loadApiKey() {
     }
     
     updateApiStatus('✅ Google AI API key configured. Ready to analyze images and comments!', 'available');
+    
+    // Update UI state after loading API key
+    if (typeof updateUIState === 'function') {
+      updateUIState();
+    }
+    
+    // Auto-hide the success message after 5 seconds
+    setTimeout(() => {
+      hideApiStatus();
+    }, 5000);
   } else {
     console.log('⚠️ No saved API key found');
     updateApiStatus('🔑 Enter your Google AI API key to get started', 'unavailable');
@@ -90,6 +100,13 @@ function saveApiKey(customKey = null) {
     updateUIState();
   }
   
+  // Auto-hide the success message after 5 seconds
+  setTimeout(() => {
+    hideApiStatus();
+  }, 5000);
+  
+  console.log('🔑 Global geminiApiKey updated:', !!geminiApiKey);
+  
   console.log('🎉 API key successfully saved and UI updated');
   return true;
 }
@@ -122,9 +139,28 @@ function updateApiStatus(message, type) {
   if (statusEl) {
     statusEl.textContent = message;
     statusEl.className = `api-status ${type}`;
+    statusEl.style.display = 'block';
     console.log(`📱 API status updated: ${message}`);
   } else {
     console.error('❌ API status element not found in DOM');
+  }
+}
+
+/**
+ * Hides the API status display with a smooth fade effect
+ */
+function hideApiStatus() {
+  const statusEl = document.getElementById('apiStatus');
+  if (statusEl && statusEl.classList.contains('available')) {
+    console.log('⏰ Auto-hiding API status message after 5 seconds');
+    statusEl.style.transition = 'opacity 0.5s ease-out';
+    statusEl.style.opacity = '0';
+    
+    setTimeout(() => {
+      statusEl.style.display = 'none';
+      statusEl.style.opacity = '1'; // Reset for next time
+      statusEl.style.transition = '';
+    }, 500);
   }
 }
 

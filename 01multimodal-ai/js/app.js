@@ -11,9 +11,8 @@ window.addEventListener('load', () => {
   // Load saved API key from storage
   loadApiKey();
   
-  // Clear any stored images to prevent localStorage quota issues
-  // Images are handled in-memory only for this session
-  localStorage.removeItem('uploadedImages');
+  // Load posted images from storage
+  loadPostedImages();
   
   // Load any saved comments
   loadComments();
@@ -24,5 +23,12 @@ window.addEventListener('load', () => {
   // Update UI based on current state
   updateUIState();
   
-  console.log('AI-powered image analysis and comment moderation app initialized');
+  console.log('🎉 AI-powered image analysis and comment moderation app initialized');
+});
+
+// Clear storage on page refresh as per requirements
+window.addEventListener('beforeunload', () => {
+  console.log('🧹 Page refreshing - clearing posted images and comments...');
+  clearPostedImages();
+  localStorage.removeItem('comments');
 });

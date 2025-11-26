@@ -55,10 +55,17 @@ function displayImagePreview(dataUrl, fileName) {
   
   const preview = document.getElementById('imagePreview');
   const img = document.getElementById('previewImg');
+  const uploadArea = document.getElementById('uploadArea');
   
   if (!preview || !img) {
     console.error('Image preview elements not found');
     return;
+  }
+  
+  // Hide the upload area once image is selected
+  if (uploadArea) {
+    uploadArea.style.display = 'none';
+    console.log('📦 Upload area hidden - image selected for processing');
   }
   
   img.src = dataUrl;
@@ -85,7 +92,7 @@ async function generateAltText(imageData) {
   // Create new abort controller for cancellation
   currentAnalysisController = new AbortController();
   
-  // Show loading state with cancel button
+  // Show loading state
   const altTextResult = document.getElementById('altTextResult');
   const regenerateBtn = document.getElementById('regenerateAltText');
   
@@ -97,21 +104,13 @@ async function generateAltText(imageData) {
   altTextResult.innerHTML = `
     <div>
       🤖 Analyzing image with Gemini AI... <span class="loading"></span>
-      <button id="cancelAnalysis" class="cancel-btn">Cancel</button>
     </div>
   `;
+  altTextResult.style.display = 'block';
   
   if (regenerateBtn) {
     regenerateBtn.style.display = 'none';
   }
-  
-  // Add cancel button functionality
-  setTimeout(() => {
-    const cancelBtn = document.getElementById('cancelAnalysis');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', cancelAnalysis);
-    }
-  }, 0);
   
   try {
     // Extract image data and detect MIME type
@@ -238,37 +237,226 @@ async function generateAltText(imageData) {
   }
 }
 
+
 /**
- * Cancels the current image analysis request
+ * Cancels the current image selection and returns to upload area
  */
-function cancelAnalysis() {
+window.cancelImageSelection = function cancelImageSelection() {
+  console.log('❌ User cancelled image selection');
+  
+  // Cancel any ongoing analysis
   if (currentAnalysisController) {
     currentAnalysisController.abort();
   }
+  
+  // Hide preview and reset all elements
+  const preview = document.getElementById('imagePreview');
+  const previewImg = document.getElementById('previewImg');
+  const actionsEl = document.getElementById('altTextActions');
+  const altTextResult = document.getElementById('altTextResult');
+  
+  if (preview) {
+    preview.style.display = 'none';
+    console.log('🔄 Image preview hidden');
+  }
+  
+  // Clear the preview image
+  if (previewImg) {
+    previewImg.src = '';
+    previewImg.alt = '';
+    console.log('🔄 Preview image cleared');
+  }
+  
+  if (actionsEl) {
+    actionsEl.style.display = 'none';
+    console.log('🔄 Alt text actions hidden');
+  }
+  
+  // Reset alt text result area
+  if (altTextResult) {
+    altTextResult.innerHTML = '<div class="loading">Analyzing image with Gemini AI...</div>';
+    altTextResult.style.display = 'block';
+    console.log('🔄 Alt text result area reset');
+  }
+  
+  // Clear alt text editor if it exists
+  const altTextEditor = document.getElementById('altTextEditor');
+  if (altTextEditor) {
+    altTextEditor.value = '';
+    console.log('🔄 Alt text editor cleared');
+  }
+  
+  // Show upload area again
+  const uploadArea = document.getElementById('uploadArea');
+  if (uploadArea) {
+    uploadArea.style.display = 'block';
+    console.log('📦 Upload area shown - user cancelled image selection');
+  } else {
+    console.error('❌ Upload area element not found!');
+  }
+  
+  // Reset file input and current data
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput) {
+    fileInput.value = '';
+    console.log('🔄 File input cleared');
+  }
+  
+  currentImageData = null;
+  currentAltText = null;
+  console.log('✅ Image selection cancelled and upload area restored');
 }
 
 /**
- * Updates the alt text result display
+ * Updates the alt text result display and shows editing interface
  * @param {string} text - The alt text or error message to display
  */
 function updateAltTextResult(text) {
   const resultEl = document.getElementById('altTextResult');
-  const regenerateBtn = document.getElementById('regenerateAltText');
+  const actionsEl = document.getElementById('altTextActions');
+  const editorEl = document.getElementById('altTextEditor');
   
-  if (!resultEl) {
-    console.error('Alt text result element not found');
+  if (!resultEl || !actionsEl || !editorEl) {
+    console.error('Alt text elements not found');
     return;
   }
   
   if (text.startsWith('❌') || text.startsWith('⏹️')) {
+    // Show error state
     resultEl.innerHTML = `<div style="color: #c62828;">${text}</div>`;
-    if (regenerateBtn) {
-      regenerateBtn.style.display = 'none';
-    }
+    resultEl.style.display = 'block';
+    actionsEl.style.display = 'none';
   } else {
-    resultEl.innerHTML = `<div class="alt-text">${escapeHtml(text)}</div>`;
-    if (regenerateBtn) {
-      regenerateBtn.style.display = 'inline-block';
-    }
+    // Show success state with editing interface - hide result div, show editor
+    resultEl.style.display = 'none';
+    editorEl.value = text;
+    actionsEl.style.display = 'block';
+    
+    console.log('✅ Alt text generated and editing interface shown');
   }
 }
+
+/**
+ * Handles accepting and posting the image with alt text
+ */
+function acceptAndPostImage() {
+  const editorEl = document.getElementById('altTextEditor');
+  const imageData = currentImageData;
+  
+  if (!editorEl || !imageData) {
+    console.error('❌ Missing required elements for posting image');
+    return;
+  }
+  
+  const finalAltText = editorEl.value.trim();
+  if (!finalAltText) {
+    alert('Please provide alt text before posting the image');
+    return;
+  }
+  
+  console.log('📤 Posting image with alt text:', finalAltText);
+  
+  // Create posted image object
+  const postedImage = {
+    id: Date.now().toString(),
+    imageData: imageData,
+    altText: finalAltText,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Save to posted images
+  savePostedImage(postedImage);
+  
+  // Display in feed
+  displayPostedImage(postedImage);
+  
+  // Show comment section
+  showCommentSection();
+  
+  // Reset upload interface
+  resetUploadInterface();
+  
+  console.log('🎉 Image posted successfully!');
+}
+
+/**
+ * Displays a posted image in the feed
+ * @param {Object} imageData - The posted image data
+ */
+window.displayPostedImage = function displayPostedImage(imageData) {
+  const postedImages = document.getElementById('postedImages');
+  const imagesFeed = document.getElementById('imagesFeed');
+  
+  if (!postedImages || !imagesFeed) {
+    console.error('Posted images elements not found');
+    return;
+  }
+  
+  // Show the posted images section
+  postedImages.style.display = 'block';
+  
+  // Create image item
+  const imageItem = document.createElement('div');
+  imageItem.className = 'posted-image-item';
+  imageItem.dataset.imageId = imageData.id;
+  
+  const timestamp = new Date(imageData.timestamp).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+  
+  imageItem.innerHTML = `
+    <img src="${imageData.imageData}" alt="${escapeHtml(imageData.altText)}">
+    <div class="posted-image-meta">
+      <span>Posted ${timestamp}</span>
+    </div>
+  `;
+  
+  // Add to feed (newest first)
+  imagesFeed.insertBefore(imageItem, imagesFeed.firstChild);
+}
+
+/**
+ * Shows the comment section after an image is posted
+ */
+window.showCommentSection = function showCommentSection() {
+  const commentSection = document.getElementById('commentSection');
+  if (commentSection) {
+    commentSection.style.display = 'block';
+    console.log('💬 Comment section shown');
+  }
+}
+
+/**
+ * Resets and hides the upload interface after posting
+ */
+function resetUploadInterface() {
+  const uploadSection = document.getElementById('uploadSection');
+  const uploadArea = document.getElementById('uploadArea');
+  const preview = document.getElementById('imagePreview');
+  const actionsEl = document.getElementById('altTextActions');
+  const fileInput = document.getElementById('fileInput');
+  
+  // Hide the entire upload section after successful posting
+  if (uploadSection) {
+    uploadSection.style.display = 'none';
+    console.log('📦 Upload section hidden after posting');
+  }
+  
+  // Make sure upload area is visible when section is shown again
+  if (uploadArea) {
+    uploadArea.style.display = 'block';
+  }
+  
+  if (preview) preview.style.display = 'none';
+  if (actionsEl) actionsEl.style.display = 'none';
+  if (fileInput) fileInput.value = '';
+  
+  currentImageData = null;
+  currentAltText = null;
+  
+  console.log('🔄 Upload interface reset and hidden');
+}
+

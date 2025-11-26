@@ -6,11 +6,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-image: url('sweet_pattern_random1-11.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 50%, #dbeafe 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -23,7 +19,7 @@ body {
 .container {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 149, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 30px rgba(37, 99, 235, 0.1);
   max-width: 600px;
   width: 100%;
   padding: 0;
@@ -35,7 +31,7 @@ body {
 .post-header {
   padding: 20px 20px 16px;
   border-bottom: 1px solid #e0e0e0;
-  background: linear-gradient(to bottom, #fff8e1 0%, #ffffff 100%);
+  background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
 }
 
 .post-image {
@@ -56,10 +52,10 @@ body {
 }
 
 h1 {
-  color: #ff6b00;
+  color: #2563eb;
   margin-bottom: 10px;
   font-size: 28px;
-  text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.2);
+  text-shadow: 2px 2px 4px rgba(37, 99, 235, 0.2);
 }
 
 .post-header p {
@@ -108,7 +104,7 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: #ff6b00;
+  border-color: #2563eb;
 }
 
 .button-group {
@@ -129,14 +125,14 @@ button {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #ff6b00 0%, #ff9500 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
   color: white;
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.6);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .submit-btn:disabled {
@@ -205,6 +201,7 @@ button {
   margin-bottom: 20px;
   font-size: 13px;
   color: #666;
+  transition: opacity 0.5s ease-out;
 }
 
 .api-status.available {
@@ -222,7 +219,7 @@ button {
   width: 14px;
   height: 14px;
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #ff6b00;
+  border-top: 2px solid #2563eb;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-left: 8px;
@@ -251,8 +248,10 @@ button {
 }
 
 .comment-item {
-  background: #fff8e1;
+  background: #f8fafc;
   padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -274,29 +273,13 @@ button {
 
 .comment-author {
   font-weight: 600;
-  color: #ff6b00;
+  color: #2563eb;
 }
 
 .comment-date {
   color: #999;
 }
 
-.delete-btn {
-  background: transparent;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  transition: all 0.2s;
-  flex: 0 0 auto;
-}
-
-.delete-btn:hover {
-  background: #ffebee;
-  color: #c62828;
-}
 
 .no-comments {
   text-align: center;
@@ -305,18 +288,6 @@ button {
   padding: 40px 20px;
 }
 
-.clear-all-btn {
-  background: #f5f5f5;
-  color: #666;
-  margin-top: 16px;
-  width: 100%;
-  flex: none;
-}
-
-.clear-all-btn:hover {
-  background: #ffebee;
-  color: #c62828;
-}
 
 .site-footer {
   text-align: center;
@@ -330,14 +301,14 @@ button {
 }
 
 .site-footer a {
-  color: #ffd700;
+  color: #60a5fa;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s;
 }
 
 .site-footer a:hover {
-  color: #ff6b00;
+  color: #2563eb;
   text-decoration: underline;
 }
 
@@ -366,13 +337,13 @@ button {
 }
 
 .upload-area:hover {
-  border-color: #ff6b00;
-  background: #fff8f0;
+  border-color: #2563eb;
+  background: #f0f8ff;
 }
 
 .upload-area.dragover {
-  border-color: #ff6b00;
-  background: #fff8f0;
+  border-color: #2563eb;
+  background: #f0f8ff;
   transform: scale(1.02);
 }
 
@@ -398,13 +369,42 @@ button {
   border-radius: 12px;
   overflow: hidden;
   background: white;
+  position: relative;
+}
+
+.image-preview-header {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.cancel-image-btn {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.cancel-image-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
 }
 
 .preview-image {
   width: 100%;
-  max-height: 400px;
-  object-fit: contain;
+  height: auto;
   display: block;
+  border-radius: 8px 8px 0 0;
 }
 
 .alt-text-section {
@@ -423,7 +423,7 @@ button {
   padding: 16px;
   margin-bottom: 16px;
   min-height: 60px;
-  border-left: 4px solid #ff6b00;
+  border-left: 4px solid #2563eb;
 }
 
 .alt-text-result .loading {
@@ -431,7 +431,7 @@ button {
   width: 14px;
   height: 14px;
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #ff6b00;
+  border-top: 2px solid #2563eb;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-left: 8px;
@@ -458,21 +458,6 @@ button {
   border-color: #ccc;
 }
 
-.cancel-btn {
-  background: #ff4444;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 4px;
-  margin-left: 12px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.cancel-btn:hover {
-  background: #cc3333;
-}
 
 /* API Key Section Styles */
 .api-key-section {
@@ -512,11 +497,11 @@ button {
 
 .api-key-input input:focus {
   outline: none;
-  border-color: #ff6b00;
+  border-color: #2563eb;
 }
 
 .save-key-btn {
-  background: #ff6b00;
+  background: #2563eb;
   color: white;
   border: none;
   padding: 12px 20px;
@@ -528,7 +513,7 @@ button {
 }
 
 .save-key-btn:hover {
-  background: #ff9500;
+  background: #3b82f6;
 }
 
 .api-key-help {
@@ -538,7 +523,7 @@ button {
 }
 
 .api-key-help a {
-  color: #ff6b00;
+  color: #2563eb;
   text-decoration: none;
 }
 
@@ -551,4 +536,173 @@ button {
   margin: 0 0 16px 0;
   color: #333;
   font-size: 16px;
+}
+
+/* Alt text editing styles */
+.alt-text-actions {
+  margin-top: 16px;
+}
+
+.alt-text-editor {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.alt-text-editor:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.alt-text-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.accept-btn {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.accept-btn:hover {
+  background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+}
+
+/* Posted images feed styles */
+.posted-images {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.posted-images h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 20px;
+  margin-top: 0;
+}
+
+.images-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.posted-image-item {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+.posted-image-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+
+.posted-image-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Comment section improvements */
+.comment-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Enhanced suggestion interface styles */
+.suggestion-interface {
+  margin-top: 16px;
+  border-top: 1px solid #e65100;
+  padding-top: 12px;
+}
+
+.suggestion-header h3 {
+  margin: 0 0 12px 0;
+  color: #e65100;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.suggestion-content {
+  background: #fff8e1;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #ffcc02;
+}
+
+.suggestion-editor {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ffcc02;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 12px;
+  background: white;
+}
+
+.suggestion-editor:focus {
+  outline: none;
+  border-color: #ff9800;
+}
+
+.suggestion-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.suggestion-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 0 0 auto;
+}
+
+.regenerate-btn {
+  background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+  color: white;
+  border: 1px solid #ff9800;
+}
+
+.regenerate-btn:hover {
+  background: linear-gradient(135deg, #ffb74d 0%, #ff9800 100%);
+  transform: translateY(-1px);
+}
+
+.submit-btn.suggestion-btn {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+  border: 1px solid #4caf50;
+}
+
+.submit-btn.suggestion-btn:hover {
+  background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+  transform: translateY(-1px);
 }
