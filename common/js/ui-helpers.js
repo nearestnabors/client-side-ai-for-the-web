@@ -13,9 +13,19 @@ const domCache = new Map();
  */
 export function getElement(id) {
   if (!domCache.has(id)) {
-    domCache.set(id, document.getElementById(id));
+    const element = document.getElementById(id);
+    domCache.set(id, element);
   }
-  return domCache.get(id);
+  const cachedElement = domCache.get(id);
+  
+  // If cached element is null or no longer in DOM, refresh cache
+  if (cachedElement === null || (cachedElement && !document.contains(cachedElement))) {
+    const freshElement = document.getElementById(id);
+    domCache.set(id, freshElement);
+    return freshElement;
+  }
+  
+  return cachedElement;
 }
 
 /**
@@ -26,13 +36,36 @@ export function clearDOMCache() {
 }
 
 /**
+ * Safely executes a function on a DOM element if it exists
+ * @param {string} id - The element ID
+ * @param {Function} callback - Function to execute with the element
+ * @returns {boolean} - True if element exists and callback was executed
+ */
+export function safeElementOperation(id, callback) {
+  const element = getElement(id);
+  if (element && element !== null) {
+    try {
+      callback(element);
+      return true;
+    } catch (error) {
+      console.error(`❌ Error in safeElementOperation for '${id}':`, error);
+      return false;
+    }
+  }
+  console.log(`ℹ️ Element '${id}' not found - operation skipped`);
+  return false;
+}
+
+/**
  * Updates the submit button state based on API key availability and comment text
  */
 export function updateSubmitButton() {
-  const commentEl = getElement('comment');
-  const submitBtn = getElement('submitBtn');
-  const comment = commentEl.value.trim();
-  submitBtn.disabled = !window.geminiApiKey || !comment;
+  safeElementOperation('comment', (commentEl) => {
+    safeElementOperation('submitBtn', (submitBtn) => {
+      const comment = commentEl.value.trim();
+      submitBtn.disabled = !window.geminiApiKey || !comment;
+    });
+  });
 }
 
 /**
@@ -43,15 +76,16 @@ export function updateUIState() {
   updateSubmitButton();
   
   // Show or hide the API key section based on API key availability
-  const apiKeySection = getElement('apiKeySection');
   const hasApiKey = !!window.geminiApiKey;
   console.log(`🔍 Updating UI state - API key available: ${hasApiKey}`);
   
-  if (hasApiKey) {
-    apiKeySection.style.display = 'none';
-  } else {
-    apiKeySection.style.display = 'block';
-  }
+  safeElementOperation('apiKeySection', (apiKeySection) => {
+    if (hasApiKey) {
+      apiKeySection.style.display = 'none';
+    } else {
+      apiKeySection.style.display = 'block';
+    }
+  });
 }
 
 /**
@@ -202,3 +236,6 @@ export function setupEventListeners() {
   
   console.log('✅ All event listeners setup complete');
 }
+
+// Make clearDOMCache globally available for other modules
+window.clearDOMCache = clearDOMCache;

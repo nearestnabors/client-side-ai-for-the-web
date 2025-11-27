@@ -30,7 +30,13 @@ export function loadApiKey() {
     
     // Remove the API configuration pane from DOM entirely for security
     const apiKeySection = document.getElementById('apiKeySection');
-    apiKeySection.remove();
+    if (apiKeySection) {
+      apiKeySection.remove();
+      // Clear DOM cache since elements were removed
+      if (window.clearDOMCache) {
+        window.clearDOMCache();
+      }
+    }
     
     updateApiStatus({ message: '✅ Google AI API key configured. Ready to analyze images and comments!', type: 'available' });
     
@@ -40,7 +46,7 @@ export function loadApiKey() {
     }, 5000);
   } else {
     console.log('⚠️ No saved API key found');
-    updateApiStatus({ message: '🔑 Enter your Google AI API key to get started', type: 'unavailable' });
+    // API configuration section is already visible, no need for redundant status message
   }
 }
 
@@ -87,7 +93,13 @@ export function saveApiKey(customKey = null) {
   
   // Remove the API configuration pane from DOM entirely for security
   const apiKeySection = document.getElementById('apiKeySection');
-  apiKeySection.remove();
+  if (apiKeySection) {
+    apiKeySection.remove();
+    // Clear DOM cache since elements were removed
+    if (window.clearDOMCache) {
+      window.clearDOMCache();
+    }
+  }
   
   updateApiStatus({ message: '✅ API key saved! Ready to analyze images and comments.', type: 'available' });
   
@@ -162,18 +174,24 @@ export function setupApiKeyEventListeners() {
   const saveButton = document.getElementById('saveApiKey');
   const input = document.getElementById('apiKeyInput');
 
-  saveButton.addEventListener('click', () => {
-    console.log('🖱️ Save API key button clicked');
-    saveApiKey();
-  });
-
-  // Allow saving with Enter key for better UX
-  input.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      console.log('⌨️ Enter key pressed in API key input');
+  // Check if elements exist before adding listeners (they may have been removed if API key is already saved)
+  if (saveButton && input) {
+    saveButton.addEventListener('click', () => {
+      console.log('🖱️ Save API key button clicked');
       saveApiKey();
-    }
-  });
+    });
+
+    // Allow saving with Enter key for better UX
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        console.log('⌨️ Enter key pressed in API key input');
+        saveApiKey();
+      }
+    });
+    console.log('✅ API key event listeners attached');
+  } else {
+    console.log('ℹ️ API key elements not found - likely already configured and removed');
+  }
 }
 
 /**
@@ -188,9 +206,10 @@ export function clearApiKey() {
   window.geminiApiKey = null;
   
   const input = document.getElementById('apiKeyInput');
-  input.value = '';
+  if (input) {
+    input.value = '';
+  }
   
-  updateApiStatus({ message: '🔑 Enter your Google AI API key to get started', type: 'unavailable' });
   console.log('✅ API key cleared successfully');
 }
 
