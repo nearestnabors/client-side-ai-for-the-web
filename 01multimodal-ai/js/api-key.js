@@ -28,9 +28,9 @@ export function loadApiKey() {
     geminiApiKey = saved;
     window.geminiApiKey = saved;
     
-    // Mask the key in the input field for security
-    const input = document.getElementById('apiKeyInput');
-    input.value = MASKED_KEY_DISPLAY;
+    // Remove the API configuration pane from DOM entirely for security
+    const apiKeySection = document.getElementById('apiKeySection');
+    apiKeySection.remove();
     
     updateApiStatus({ message: '✅ Google AI API key configured. Ready to analyze images and comments!', type: 'available' });
     
@@ -84,6 +84,10 @@ export function saveApiKey(customKey = null) {
   // Mask the key in the input field for security
   const input = document.getElementById('apiKeyInput');
   input.value = MASKED_KEY_DISPLAY;
+  
+  // Remove the API configuration pane from DOM entirely for security
+  const apiKeySection = document.getElementById('apiKeySection');
+  apiKeySection.remove();
   
   updateApiStatus({ message: '✅ API key saved! Ready to analyze images and comments.', type: 'available' });
   

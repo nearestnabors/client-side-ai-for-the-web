@@ -170,21 +170,15 @@ export function loadPostedImages() {
 }
 
 /**
- * Clears all posted images (called on page refresh according to requirements)
+ * Clears all posted images from localStorage
+ * Called on page refresh according to requirements.
+ * Note: Does not manipulate DOM as it may be called during page unload
+ * when DOM elements are unavailable.
  */
 export function clearPostedImages() {
   console.log('🧹 Clearing all posted images from localStorage...');
   localStorage.removeItem('postedImages');
-  
-  // Show upload section again when images are cleared
-  const uploadSection = getElement('uploadSection');
-  const uploadArea = getElement('uploadArea');
-  uploadSection.style.display = 'block';
-  console.log('📦 Upload section shown - no posted images');
-  
-  // Ensure upload area is visible
-  uploadArea.style.display = 'block';
-  console.log('📦 Upload area shown - ready for new uploads');
+  console.log('✅ Posted images cleared from storage');
 }
 
 // Make functions globally available for cross-module compatibility
