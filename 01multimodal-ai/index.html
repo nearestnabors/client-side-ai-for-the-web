@@ -1,104 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI-Powered Image Analysis & Comment Moderation</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <div class="post-header">
-      <h1>🤖 AI-Powered Image Analysis & Comment Moderation</h1>
-      <p>Upload an image and let Google's Gemini AI analyze it and generate alt-text. Add comments and see how AI moderates them for constructive conversation.</p>
-    </div>
-
-    <div class="upload-section" id="uploadSection">
-      <h2>📸 Upload Image</h2>
-      <div class="upload-area" id="uploadArea">
-        <div class="upload-content">
-          <div class="upload-icon">📁</div>
-          <p>Click to upload an image or drag and drop here</p>
-          <input type="file" id="fileInput" accept="image/*" hidden>
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI-Powered Image Analysis & Comment Moderation</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="post-header">
+        <h1>🤖 AI-Powered Image Analysis & Comment Moderation</h1>
+        <p>
+          Upload an image and let Google's Gemini AI analyze it and generate
+          alt-text. Add comments and see how AI moderates them for constructive
+          conversation.
+        </p>
       </div>
-      <div id="imagePreview" class="image-preview" style="display: none;">
-        <div class="image-preview-header">
-          <button id="cancelImageBtn" class="cancel-image-btn" title="Cancel and choose different image">✕</button>
-        </div>
-        <img id="previewImg" class="preview-image" alt="Uploaded image">
-        <div id="altTextSection" class="alt-text-section">
-          <h3>🔍 AI-Generated Alt Text</h3>
-          <div id="altTextResult" class="alt-text-result">
-            <div class="loading">Analyzing image with Gemini AI...</div>
+
+      <div class="upload-section" id="uploadSection">
+        <h2>📸 Upload Image</h2>
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-content">
+            <div class="upload-icon">📁</div>
+            <p>Click to upload an image or drag and drop here</p>
+            <input type="file" id="fileInput" accept="image/*" hidden />
           </div>
-          <div id="altTextActions" class="alt-text-actions" style="display: none;">
-            <textarea id="altTextEditor" class="alt-text-editor" placeholder="Edit alt text..."></textarea>
-            <div class="alt-text-buttons">
-              <button id="regenerateAltText" class="regenerate-btn">🔄 Regenerate</button>
-              <button id="acceptAltText" class="accept-btn">✅ Accept & Post Image</button>
+        </div>
+        <div id="imagePreview" class="image-preview" style="display: none">
+          <div class="image-preview-header">
+            <button
+              id="cancelImageBtn"
+              class="cancel-image-btn"
+              title="Cancel and choose different image"
+            >
+              ✕
+            </button>
+          </div>
+          <img id="previewImg" class="preview-image" alt="Uploaded image" />
+          <div id="altTextSection" class="alt-text-section">
+            <h3>🔍 AI-Generated Alt Text</h3>
+            <div id="altTextResult" class="alt-text-result">
+              <div class="loading">Analyzing image with Gemini AI...</div>
+            </div>
+            <div
+              id="altTextActions"
+              class="alt-text-actions"
+              style="display: none"
+            >
+              <textarea
+                id="altTextEditor"
+                class="alt-text-editor"
+                placeholder="Edit alt text..."
+              ></textarea>
+              <div class="alt-text-buttons">
+                <button id="regenerateAltText" class="regenerate-btn">
+                  🔄 Regenerate
+                </button>
+                <button id="acceptAltText" class="accept-btn">
+                  ✅ Accept & Post Image
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <div class="post-content">
+        <div id="apiStatus" class="api-status">
+          Configure your Google AI API key to get started...
+        </div>
+
+        <div class="api-key-section" id="apiKeySection">
+          <h3>🔑 Google AI Configuration</h3>
+          <p>
+            Enter your Google AI API key to enable image analysis and comment
+            moderation:
+          </p>
+          <div class="api-key-input">
+            <input
+              type="password"
+              id="apiKeyInput"
+              placeholder="Enter your Google AI API key"
+            />
+            <button id="saveApiKey" class="save-key-btn">Save Key</button>
+          </div>
+          <p class="api-key-help">
+            Get your API key from
+            <a href="https://aistudio.google.com/app/apikey" target="_blank"
+              >Google AI Studio</a
+            >
+          </p>
+        </div>
+
+        <!-- Posted Images Feed -->
+        <div id="postedImages" class="posted-images" style="display: none">
+          <h2>📷 Your Posted Images</h2>
+          <div id="imagesFeed" class="images-feed"></div>
+        </div>
+
+        <!-- Comment Form - Only shown after image is posted -->
+        <div id="commentSection" class="comment-section" style="display: none">
+          <form id="commentForm">
+            <div class="form-group">
+              <h3>💬 Add a Comment</h3>
+              <textarea
+                id="comment"
+                name="comment"
+                placeholder="Share your thoughts in a constructive way..."
+                required
+              ></textarea>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                Submit Comment
+              </button>
+            </div>
+          </form>
+
+          <div id="status" class="status"></div>
+
+          <div
+            id="commentsSection"
+            class="comments-section"
+            style="display: none"
+          >
+            <h2 id="commentsHeader">Comments</h2>
+            <div id="commentsList" class="comments-list"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="post-content">
-      <div id="apiStatus" class="api-status">Configure your Google AI API key to get started...</div>
+    <footer class="site-footer">
+      <p>
+        Demo for tutorial by
+        <a href="https://nearestnabors.com" target="_blank">RL Nabors</a>
+      </p>
+    </footer>
 
-      <div class="api-key-section" id="apiKeySection">
-        <h3>🔑 Google AI Configuration</h3>
-        <p>Enter your Google AI API key to enable image analysis and comment moderation:</p>
-        <div class="api-key-input">
-          <input type="password" id="apiKeyInput" placeholder="Enter your Google AI API key">
-          <button id="saveApiKey" class="save-key-btn">Save Key</button>
-        </div>
-        <p class="api-key-help">
-          Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
-        </p>
-      </div>
-
-      <!-- Posted Images Feed -->
-      <div id="postedImages" class="posted-images" style="display: none;">
-        <h2>📷 Your Posted Images</h2>
-        <div id="imagesFeed" class="images-feed"></div>
-      </div>
-
-      <!-- Comment Form - Only shown after image is posted -->
-      <div id="commentSection" class="comment-section" style="display: none;">
-        <form id="commentForm">
-          <div class="form-group">
-            <h3>💬 Add a Comment</h3>
-            <textarea 
-              id="comment" 
-              name="comment" 
-              placeholder="Share your thoughts in a constructive way..."
-              required
-            ></textarea>
-          </div>
-
-          <div class="button-group">
-            <button type="submit" class="submit-btn" id="submitBtn" disabled>
-              Submit Comment
-            </button>
-          </div>
-        </form>
-
-        <div id="status" class="status"></div>
-
-        <div id="commentsSection" class="comments-section" style="display: none;">
-          <h2 id="commentsHeader">Comments</h2>
-          <div id="commentsList" class="comments-list"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <footer class="site-footer">
-    <p>Background pattern by <a href="https://www.freepik.com/free-vector/sweet-pattern-random_1891920.htm" target="_blank" rel="noopener noreferrer">Amonrat Rungreangfangsai</a> on Freepik</p>
-  </footer>
-
-  <!-- Load the main app as an ES6 module -->
-  <script type="module" src="js/main.js"></script>
-</body>
+    <!-- Load the main app as an ES6 module -->
+    <script type="module" src="js/main.js"></script>
+  </body>
 </html>
