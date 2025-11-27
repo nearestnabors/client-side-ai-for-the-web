@@ -3,8 +3,8 @@
  * Uses AI to evaluate comments for toxicity and suggest improvements
  */
 
-import { addComment } from './storage.js';
-import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement } from './ui-helpers.js';
+import { addComment } from '/common/js/storage.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement } from '/common/js/ui-helpers.js';
 
 /**
  * Handles comment form submission

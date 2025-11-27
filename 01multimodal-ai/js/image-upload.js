@@ -3,8 +3,8 @@
  * Handles file uploads, drag-and-drop, and AI-powered alt-text generation
  */
 
-import { escapeHtml, handleError, createApiError, getElement } from './ui-helpers.js';
-import { savePostedImage } from './storage.js';
+import { escapeHtml, handleError, createApiError, getElement } from '/common/js/ui-helpers.js';
+import { savePostedImage } from '/common/js/storage.js';
 
 let currentImageData = null;
 let currentAltText = null;

@@ -3,9 +3,9 @@
  * Coordinates the loading and setup of all app features
  */
 
-import { loadApiKey, setupApiKeyEventListeners } from './api-key.js';
-import { loadPostedImages, clearPostedImages, loadComments } from './storage.js';
-import { setupEventListeners, updateUIState } from './ui-helpers.js';
+import { loadApiKey, setupApiKeyEventListeners } from '/common/js/api-key.js';
+import { loadPostedImages, clearPostedImages, loadComments } from '/common/js/storage.js';
+import { setupEventListeners, updateUIState } from '/common/js/ui-helpers.js';
 // Import other modules to ensure they load and register their global functions
 import './image-upload.js';
 import './comment-moderation.js';
