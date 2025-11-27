@@ -3,37 +3,54 @@
  * Contains utility functions for managing UI state and interactions
  */
 
+// DOM element cache for improved performance
+const domCache = new Map();
+
+/**
+ * Gets a DOM element by ID with caching for improved performance
+ * @param {string} id - The element ID
+ * @returns {Element|null} - The DOM element or null if not found
+ */
+export function getElement(id) {
+  if (!domCache.has(id)) {
+    domCache.set(id, document.getElementById(id));
+  }
+  return domCache.get(id);
+}
+
+/**
+ * Clears the DOM cache (useful for dynamic content changes)
+ */
+export function clearDOMCache() {
+  domCache.clear();
+}
+
 /**
  * Updates the submit button state based on API key availability and comment text
  */
-function updateSubmitButton() {
-  const commentEl = document.getElementById('comment');
-  const submitBtn = document.getElementById('submitBtn');
-  if (!commentEl || !submitBtn) {
-    return;
-  }
+export function updateSubmitButton() {
+  const commentEl = getElement('comment');
+  const submitBtn = getElement('submitBtn');
   const comment = commentEl.value.trim();
-  submitBtn.disabled = !geminiApiKey || !comment;
+  submitBtn.disabled = !window.geminiApiKey || !comment;
 }
 
 /**
  * Updates the overall UI state based on API key availability
  * Shows/hides API key configuration section
  */
-function updateUIState() {
+export function updateUIState() {
   updateSubmitButton();
   
   // Show or hide the API key section based on API key availability
-  const apiKeySection = document.getElementById('apiKeySection');
-  if (apiKeySection) {
-    const hasApiKey = isApiKeyAvailable && isApiKeyAvailable() || !!geminiApiKey;
-    console.log(`🔍 Updating UI state - API key available: ${hasApiKey}`);
-    
-    if (hasApiKey) {
-      apiKeySection.style.display = 'none';
-    } else {
-      apiKeySection.style.display = 'block';
-    }
+  const apiKeySection = getElement('apiKeySection');
+  const hasApiKey = !!window.geminiApiKey;
+  console.log(`🔍 Updating UI state - API key available: ${hasApiKey}`);
+  
+  if (hasApiKey) {
+    apiKeySection.style.display = 'none';
+  } else {
+    apiKeySection.style.display = 'block';
   }
 }
 
@@ -42,30 +59,68 @@ function updateUIState() {
  * @param {string} text - Text to escape
  * @returns {string} HTML-safe text
  */
-function escapeHtml(text) {
+export function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
 /**
- * Sets up all event listeners for the application
+ * Standardized error handling and logging
+ * @param {Error} error - The error to handle
+ * @param {string} context - Context description for debugging
+ * @param {Function} callback - Optional callback for custom error handling
  */
-function setupEventListeners() {
-  // API key management - use the dedicated function from api-key.js
-  if (typeof setupApiKeyEventListeners === 'function') {
-    setupApiKeyEventListeners();
+export function handleError(error, context, callback = null) {
+  const errorMsg = `❌ ${context}: ${error.message}`;
+  console.error(errorMsg, error);
+  
+  if (callback) {
+    callback(error, context);
   }
   
+  return errorMsg;
+}
+
+/**
+ * Creates standardized API error messages
+ * @param {Response} response - Fetch response object
+ * @param {string} context - Context of the API call
+ * @returns {string} - Formatted error message
+ */
+export function createApiError(response, context) {
+  return `${context} failed (${response.status}): ${response.statusText}`;
+}
+
+/**
+ * Sets up all event listeners for the application
+ */
+export function setupEventListeners() {
+  console.log('🔌 Setting up event listeners...');
+  
   // Image upload functionality
-  const uploadArea = document.getElementById('uploadArea');
-  const fileInput = document.getElementById('fileInput');
+  const uploadArea = getElement('uploadArea');
+  const fileInput = getElement('fileInput');
+  
+  console.log('🔍 Upload elements:', { uploadArea: !!uploadArea, fileInput: !!fileInput });
   
   if (uploadArea && fileInput) {
     uploadArea.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFileSelect);
-    
-    // Drag and drop for image upload
+    fileInput.addEventListener('change', (e) => {
+      console.log('📁 File input change detected');
+      if (window.handleFileSelect) {
+        window.handleFileSelect(e);
+      } else {
+        console.error('❌ window.handleFileSelect not available');
+      }
+    });
+    console.log('✅ Upload area and file input event listeners attached');
+  } else {
+    console.error('❌ Upload area or file input not found');
+  }
+  
+  // Drag and drop for image upload  
+  if (uploadArea) {
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       uploadArea.classList.add('dragover');
@@ -81,52 +136,69 @@ function setupEventListeners() {
       
       const files = e.dataTransfer.files;
       if (files.length > 0) {
-        handleFile(files[0]);
+        if (window.handleFile) {
+          window.handleFile(files[0]);
+        } else {
+          console.error('❌ window.handleFile not available');
+        }
       }
     });
   }
   
   // Alt text regeneration
-  const regenerateBtn = document.getElementById('regenerateAltText');
+  const regenerateBtn = getElement('regenerateAltText');
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', () => {
-      if (currentImageData) {
-        generateAltText(currentImageData);
+      if (window.currentImageData && window.generateAltText) {
+        window.generateAltText(window.currentImageData);
+      } else {
+        console.error('❌ generateAltText or currentImageData not available');
       }
     });
   }
   
   // Accept and post image
-  const acceptBtn = document.getElementById('acceptAltText');
+  const acceptBtn = getElement('acceptAltText');
   if (acceptBtn) {
-    acceptBtn.addEventListener('click', acceptAndPostImage);
+    acceptBtn.addEventListener('click', () => {
+      if (window.acceptAndPostImage) {
+        window.acceptAndPostImage();
+      } else {
+        console.error('❌ acceptAndPostImage not available');
+      }
+    });
   }
   
   // Cancel image selection
-  const cancelBtn = document.getElementById('cancelImageBtn');
+  const cancelBtn = getElement('cancelImageBtn');
   if (cancelBtn) {
     console.log('🔌 Setting up cancel image button event listener');
     cancelBtn.addEventListener('click', () => {
       console.log('🖱️ Cancel image button clicked');
-      if (typeof cancelImageSelection === 'function') {
-        cancelImageSelection();
+      if (window.cancelImageSelection) {
+        window.cancelImageSelection();
       } else {
         console.error('❌ cancelImageSelection function not found');
       }
     });
-  } else {
-    console.warn('⚠️ Cancel image button not found during setup');
   }
   
   // Comment form handling
-  const commentForm = document.getElementById('commentForm');
+  const commentForm = getElement('commentForm');
   if (commentForm) {
-    commentForm.addEventListener('submit', handleCommentSubmit);
+    commentForm.addEventListener('submit', (e) => {
+      if (window.handleCommentSubmit) {
+        window.handleCommentSubmit(e);
+      } else {
+        console.error('❌ handleCommentSubmit not available');
+      }
+    });
   }
   
-  const commentInput = document.getElementById('comment');
+  const commentInput = getElement('comment');
   if (commentInput) {
     commentInput.addEventListener('input', updateSubmitButton);
   }
   
+  console.log('✅ All event listeners setup complete');
 }

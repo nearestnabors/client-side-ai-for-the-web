@@ -4,19 +4,16 @@
  * Note: Images are not stored to avoid localStorage quota issues
  */
 
+import { escapeHtml, getElement } from './ui-helpers.js';
+
 /**
  * Adds a new comment to the display and saves to localStorage
  * @param {string} commentText - The comment text to add
  */
-function addComment(commentText) {
-  const commentsSection = document.getElementById('commentsSection');
-  const commentsList = document.getElementById('commentsList');
-  const commentsHeader = document.getElementById('commentsHeader');
-  
-  if (!commentsSection || !commentsList) {
-    console.error('Comments section elements not found');
-    return;
-  }
+export function addComment(commentText) {
+  const commentsSection = getElement('commentsSection');
+  const commentsList = getElement('commentsList');
+  const commentsHeader = getElement('commentsHeader');
   
   // Show the comments section
   commentsSection.style.display = 'block';
@@ -51,7 +48,6 @@ function addComment(commentText) {
   // Save all comments to localStorage
   saveComments();
   
-  
   // Scroll to the new comment
   commentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -77,14 +73,14 @@ function saveComments() {
  * Loads saved comments from localStorage on page load
  * Recreates the comment elements in the UI
  */
-function loadComments() {
+export function loadComments() {
   const saved = localStorage.getItem('comments');
   if (!saved) return;
   
   try {
     const comments = JSON.parse(saved);
-    const commentsSection = document.getElementById('commentsSection');
-    const commentsList = document.getElementById('commentsList');
+    const commentsSection = getElement('commentsSection');
+    const commentsList = getElement('commentsList');
     
     if (comments.length > 0) {
       commentsSection.style.display = 'block';
@@ -102,7 +98,6 @@ function loadComments() {
         
         commentsList.appendChild(commentItem);
       });
-      
     }
   } catch (error) {
     console.error('Error loading comments:', error);
@@ -114,7 +109,7 @@ function loadComments() {
  * Saves a posted image to localStorage
  * @param {Object} imageData - The image data to save
  */
-window.savePostedImage = function savePostedImage(imageData) {
+export function savePostedImage(imageData) {
   console.log('💾 Saving posted image to localStorage...');
   
   let postedImages = [];
@@ -142,7 +137,7 @@ window.savePostedImage = function savePostedImage(imageData) {
 /**
  * Loads posted images from localStorage and displays them
  */
-window.loadPostedImages = function loadPostedImages() {
+export function loadPostedImages() {
   console.log('📂 Loading posted images from localStorage...');
   
   const saved = localStorage.getItem('postedImages');
@@ -158,43 +153,41 @@ window.loadPostedImages = function loadPostedImages() {
       console.log(`✅ Found ${postedImages.length} posted images`);
       
       postedImages.forEach(imageData => {
-        displayPostedImage(imageData);
+        window.displayPostedImage(imageData);
       });
       
       // Hide upload section since we have posted images
-      const uploadSection = document.getElementById('uploadSection');
-      if (uploadSection) {
-        uploadSection.style.display = 'none';
-        console.log('📦 Upload section hidden - images already posted');
-      }
+      const uploadSection = getElement('uploadSection');
+      uploadSection.style.display = 'none';
+      console.log('📦 Upload section hidden - images already posted');
       
       // Show comment section if images exist
-      showCommentSection();
+      window.showCommentSection();
     }
   } catch (error) {
     console.error('Error loading posted images:', error);
   }
 }
 
-
 /**
  * Clears all posted images (called on page refresh according to requirements)
  */
-window.clearPostedImages = function clearPostedImages() {
+export function clearPostedImages() {
   console.log('🧹 Clearing all posted images from localStorage...');
   localStorage.removeItem('postedImages');
   
   // Show upload section again when images are cleared
-  const uploadSection = document.getElementById('uploadSection');
-  const uploadArea = document.getElementById('uploadArea');
-  if (uploadSection) {
-    uploadSection.style.display = 'block';
-    console.log('📦 Upload section shown - no posted images');
-  }
+  const uploadSection = getElement('uploadSection');
+  const uploadArea = getElement('uploadArea');
+  uploadSection.style.display = 'block';
+  console.log('📦 Upload section shown - no posted images');
   
   // Ensure upload area is visible
-  if (uploadArea) {
-    uploadArea.style.display = 'block';
-    console.log('📦 Upload area shown - ready for new uploads');
-  }
+  uploadArea.style.display = 'block';
+  console.log('📦 Upload area shown - ready for new uploads');
 }
+
+// Make functions globally available for cross-module compatibility
+window.savePostedImage = savePostedImage;
+window.loadPostedImages = loadPostedImages;
+window.clearPostedImages = clearPostedImages;

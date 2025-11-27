@@ -3,37 +3,31 @@
  * Uses AI to evaluate comments for toxicity and suggest improvements
  */
 
+import { addComment } from './storage.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement } from './ui-helpers.js';
+
 /**
  * Handles comment form submission
  * Validates the comment with AI before posting
  * @param {Event} e - Form submission event
  */
-async function handleCommentSubmit(e) {
+export async function handleCommentSubmit(e) {
   e.preventDefault();
   
-  const commentEl = document.getElementById('comment');
-  if (!commentEl) {
-    console.error('Comment input element not found');
-    return;
-  }
-  
+  const commentEl = getElement('comment');
   const comment = commentEl.value.trim();
   if (!comment) return;
   
-  if (!geminiApiKey) {
-    showStatus('error', '❌ Please configure your Google AI API key first');
+  if (!window.geminiApiKey) {
+    showStatus({ type: 'error', message: '❌ Please configure your Google AI API key first' });
     return;
   }
   
-  const submitBtn = document.getElementById('submitBtn');
-  if (!submitBtn) {
-    console.error('Submit button element not found');
-    return;
-  }
+  const submitBtn = getElement('submitBtn');
   submitBtn.disabled = true;
   submitBtn.innerHTML = 'Checking... <span class="loading"></span>';
   
-  showStatus('checking', '🔍 Analyzing your comment for tone and constructiveness...');
+  showStatus({ type: 'checking', message: '🔍 Analyzing your comment for tone and constructiveness...' });
   
   try {
     const analysis = await analyzeComment(comment);
@@ -42,21 +36,19 @@ async function handleCommentSubmit(e) {
       // Block problematic comments and show suggestions
       submitBtn.disabled = true;
       submitBtn.innerHTML = 'Submit Comment';
-      showStatus(
-        'blocked',
-        `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>`,
-        analysis.suggestion
-      );
+      showStatus({
+        type: 'blocked',
+        message: `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>`,
+        suggestion: analysis.suggestion
+      });
     } else {
       // Accept good comments and post them
       addComment(comment);
       
       // Clear form and show success
-      const commentInput = document.getElementById('comment');
-      if (commentInput) {
-        commentInput.value = '';
-      }
-      showStatus('allowed', '✅ Comment posted! It looks constructive and respectful.');
+      const commentInput = getElement('comment');
+      commentInput.value = '';
+      showStatus({ type: 'allowed', message: '✅ Comment posted! It looks constructive and respectful.' });
       
       // Reset button state
       submitBtn.innerHTML = 'Submit Comment';
@@ -64,17 +56,15 @@ async function handleCommentSubmit(e) {
       
       // Clear status message after a moment
       setTimeout(() => {
-        const statusEl = document.getElementById('status');
-        if (statusEl) {
-          statusEl.className = 'status';
-        }
+        const statusEl = getElement('status');
+        statusEl.className = 'status';
       }, 3000);
     }
   } catch (error) {
-    console.error('Comment analysis error:', error);
+    const errorMsg = handleError(error, 'Comment analysis');
     submitBtn.disabled = false;
     submitBtn.innerHTML = 'Submit Comment';
-    showStatus('error', `❌ Error analyzing comment: ${error.message}`);
+    showStatus({ type: 'error', message: errorMsg });
   }
 }
 
@@ -84,7 +74,7 @@ async function handleCommentSubmit(e) {
  * @returns {Object} Analysis result with isProblematic, reason, and suggestion
  */
 async function analyzeComment(comment) {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.geminiApiKey}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -121,8 +111,8 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
   });
   
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || `API Error: ${response.status}`);
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || createApiError(response, 'Comment analysis API'));
   }
   
   const data = await response.json();
@@ -187,16 +177,14 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
 
 /**
  * Shows status messages to the user with enhanced suggestion interface
- * @param {string} type - Status type: 'checking', 'blocked', 'allowed', 'error'
- * @param {string} message - Main message to display
- * @param {string} suggestion - Optional suggestion text for alternatives
+ * @param {Object} config - Status configuration object
+ * @param {string} config.type - Status type: 'checking', 'blocked', 'allowed', 'error'
+ * @param {string} config.message - Main message to display
+ * @param {string} [config.suggestion] - Optional suggestion text for alternatives
  */
-function showStatus(type, message, suggestion = null) {
-  const statusEl = document.getElementById('status');
-  if (!statusEl) {
-    console.error('Status element not found');
-    return;
-  }
+function showStatus(config) {
+  const { type, message, suggestion = null } = config;
+  const statusEl = getElement('status');
   statusEl.className = `status show ${type}`;
   statusEl.innerHTML = message;
   
@@ -222,59 +210,41 @@ function showStatus(type, message, suggestion = null) {
 /**
  * Regenerates a new suggestion for the blocked comment
  */
-window.regenerateSuggestion = function regenerateSuggestion() {
+export function regenerateSuggestion() {
   console.log('🔄 Regenerating comment suggestion');
   
-  const commentInput = document.getElementById('comment');
-  if (!commentInput) {
-    console.error('Comment input not found');
-    return;
-  }
-  
+  const commentInput = getElement('comment');
   const originalComment = commentInput.value.trim();
-  if (!originalComment) {
-    console.error('No original comment to regenerate suggestion for');
-    return;
-  }
   
   // Show regenerating status
-  showStatus('checking', '🔄 Generating a new suggestion...');
+  showStatus({ type: 'checking', message: '🔄 Generating a new suggestion...' });
   
   // Re-analyze the original comment to get a new suggestion
   analyzeComment(originalComment)
     .then(analysis => {
       if (analysis.isProblematic && analysis.suggestion) {
-        showStatus('blocked', analysis.reason, analysis.suggestion);
+        showStatus({ type: 'blocked', message: analysis.reason, suggestion: analysis.suggestion });
       } else {
         // If it's no longer problematic, allow submission
         clearStatus();
-        showStatus('allowed', '✅ Comment looks good now! You can submit it.');
+        showStatus({ type: 'allowed', message: '✅ Comment looks good now! You can submit it.' });
         setTimeout(clearStatus, 3000);
       }
     })
     .catch(error => {
-      console.error('Error regenerating suggestion:', error);
-      showStatus('error', `❌ Error generating new suggestion: ${error.message}`);
+      const errorMsg = handleError(error, 'Suggestion regeneration');
+      showStatus({ type: 'error', message: errorMsg });
     });
 }
 
 /**
  * Submits the suggested comment text
  */
-window.submitSuggestion = function submitSuggestion() {
-  const suggestionEditor = document.getElementById('suggestionEditor');
-  const commentInput = document.getElementById('comment');
-  
-  if (!suggestionEditor || !commentInput) {
-    console.error('Required elements not found for suggestion submission');
-    return;
-  }
+export function submitSuggestion() {
+  const suggestionEditor = getElement('suggestionEditor');
+  const commentInput = getElement('comment');
   
   const suggestedText = suggestionEditor.value.trim();
-  if (!suggestedText) {
-    console.error('No suggested text to submit');
-    return;
-  }
   
   console.log('✅ Submitting AI-suggested comment');
   
@@ -286,7 +256,7 @@ window.submitSuggestion = function submitSuggestion() {
   clearStatus();
   
   // Show success message
-  showStatus('allowed', '✅ Comment posted! Thank you for using the suggested text.');
+  showStatus({ type: 'allowed', message: '✅ Comment posted! Thank you for using the suggested text.' });
   
   // Update submit button state
   updateSubmitButton();
@@ -299,9 +269,12 @@ window.submitSuggestion = function submitSuggestion() {
  * Clears the status display
  */
 function clearStatus() {
-  const statusEl = document.getElementById('status');
-  if (statusEl) {
-    statusEl.className = 'status';
-    statusEl.innerHTML = '';
-  }
+  const statusEl = getElement('status');
+  statusEl.className = 'status';
+  statusEl.innerHTML = '';
 }
+
+// Make functions globally available for onclick handlers
+window.regenerateSuggestion = regenerateSuggestion;
+window.submitSuggestion = submitSuggestion;
+window.handleCommentSubmit = handleCommentSubmit;

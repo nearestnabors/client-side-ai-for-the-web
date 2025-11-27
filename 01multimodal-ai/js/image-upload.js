@@ -3,6 +3,9 @@
  * Handles file uploads, drag-and-drop, and AI-powered alt-text generation
  */
 
+import { escapeHtml, handleError, createApiError, getElement } from './ui-helpers.js';
+import { savePostedImage } from './storage.js';
+
 let currentImageData = null;
 let currentAltText = null;
 let currentAnalysisController = null;
@@ -11,7 +14,7 @@ let currentAnalysisController = null;
  * Handles file selection from the file input
  * @param {Event} e - File input change event
  */
-function handleFileSelect(e) {
+export function handleFileSelect(e) {
   const file = e.target.files[0];
   if (file) {
     handleFile(file);
@@ -23,7 +26,7 @@ function handleFileSelect(e) {
  * Validates file type and size, then displays preview
  * @param {File} file - The image file to process
  */
-function handleFile(file) {
+export function handleFile(file) {
   // Check if it's actually an image
   if (!file.type.startsWith('image/')) {
     alert('Please select an image file');
@@ -53,20 +56,13 @@ function handleFile(file) {
 function displayImagePreview(dataUrl, fileName) {
   currentImageData = dataUrl;
   
-  const preview = document.getElementById('imagePreview');
-  const img = document.getElementById('previewImg');
-  const uploadArea = document.getElementById('uploadArea');
-  
-  if (!preview || !img) {
-    console.error('Image preview elements not found');
-    return;
-  }
+  const preview = getElement('imagePreview');
+  const img = getElement('previewImg');
+  const uploadArea = getElement('uploadArea');
   
   // Hide the upload area once image is selected
-  if (uploadArea) {
-    uploadArea.style.display = 'none';
-    console.log('📦 Upload area hidden - image selected for processing');
-  }
+  uploadArea.style.display = 'none';
+  console.log('📦 Upload area hidden - image selected for processing');
   
   img.src = dataUrl;
   img.alt = fileName;
@@ -78,8 +74,8 @@ function displayImagePreview(dataUrl, fileName) {
  * Uses the configured API key to make the request
  * @param {string} imageData - Base64 data URL of the image
  */
-async function generateAltText(imageData) {
-  if (!geminiApiKey) {
+export async function generateAltText(imageData) {
+  if (!window.geminiApiKey) {
     updateAltTextResult('❌ Please configure your Google AI API key first');
     return;
   }
@@ -93,13 +89,8 @@ async function generateAltText(imageData) {
   currentAnalysisController = new AbortController();
   
   // Show loading state
-  const altTextResult = document.getElementById('altTextResult');
-  const regenerateBtn = document.getElementById('regenerateAltText');
-  
-  if (!altTextResult) {
-    console.error('Alt text result element not found');
-    return;
-  }
+  const altTextResult = getElement('altTextResult');
+  const regenerateBtn = getElement('regenerateAltText');
   
   altTextResult.innerHTML = `
     <div>
@@ -120,7 +111,7 @@ async function generateAltText(imageData) {
     console.log('Sending request to Gemini API...');
     
     // Make API request to Gemini
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.geminiApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -156,9 +147,9 @@ async function generateAltText(imageData) {
       let errorMsg;
       try {
         const error = JSON.parse(errorText);
-        errorMsg = error.error?.message || `API Error: ${response.status}`;
+        errorMsg = error.error?.message || createApiError(response, 'Image analysis API');
       } catch {
-        errorMsg = `API Error: ${response.status} - ${errorText}`;
+        errorMsg = createApiError(response, 'Image analysis API');
       }
       throw new Error(errorMsg);
     }
@@ -229,8 +220,8 @@ async function generateAltText(imageData) {
     if (error.name === 'AbortError') {
       updateAltTextResult('⏹️ Analysis cancelled');
     } else {
-      console.error('Alt text generation error:', error);
-      updateAltTextResult(`❌ Error generating alt text: ${error.message}`);
+      const errorMsg = handleError(error, 'Alt text generation');
+      updateAltTextResult(errorMsg);
     }
   } finally {
     currentAnalysisController = null;
@@ -241,7 +232,7 @@ async function generateAltText(imageData) {
 /**
  * Cancels the current image selection and returns to upload area
  */
-window.cancelImageSelection = function cancelImageSelection() {
+export function cancelImageSelection() {
   console.log('❌ User cancelled image selection');
   
   // Cancel any ongoing analysis
@@ -250,22 +241,18 @@ window.cancelImageSelection = function cancelImageSelection() {
   }
   
   // Hide preview and reset all elements
-  const preview = document.getElementById('imagePreview');
-  const previewImg = document.getElementById('previewImg');
-  const actionsEl = document.getElementById('altTextActions');
-  const altTextResult = document.getElementById('altTextResult');
+  const preview = getElement('imagePreview');
+  const previewImg = getElement('previewImg');
+  const actionsEl = getElement('altTextActions');
+  const altTextResult = getElement('altTextResult');
   
-  if (preview) {
-    preview.style.display = 'none';
-    console.log('🔄 Image preview hidden');
-  }
+  preview.style.display = 'none';
+  console.log('🔄 Image preview hidden');
   
   // Clear the preview image
-  if (previewImg) {
-    previewImg.src = '';
-    previewImg.alt = '';
-    console.log('🔄 Preview image cleared');
-  }
+  previewImg.src = '';
+  previewImg.alt = '';
+  console.log('🔄 Preview image cleared');
   
   if (actionsEl) {
     actionsEl.style.display = 'none';
@@ -273,34 +260,26 @@ window.cancelImageSelection = function cancelImageSelection() {
   }
   
   // Reset alt text result area
-  if (altTextResult) {
-    altTextResult.innerHTML = '<div class="loading">Analyzing image with Gemini AI...</div>';
-    altTextResult.style.display = 'block';
-    console.log('🔄 Alt text result area reset');
-  }
+  altTextResult.innerHTML = '<div class="loading">Analyzing image with Gemini AI...</div>';
+  altTextResult.style.display = 'block';
+  console.log('🔄 Alt text result area reset');
   
   // Clear alt text editor if it exists
-  const altTextEditor = document.getElementById('altTextEditor');
+  const altTextEditor = getElement('altTextEditor');
   if (altTextEditor) {
     altTextEditor.value = '';
     console.log('🔄 Alt text editor cleared');
   }
   
   // Show upload area again
-  const uploadArea = document.getElementById('uploadArea');
-  if (uploadArea) {
-    uploadArea.style.display = 'block';
-    console.log('📦 Upload area shown - user cancelled image selection');
-  } else {
-    console.error('❌ Upload area element not found!');
-  }
+  const uploadArea = getElement('uploadArea');
+  uploadArea.style.display = 'block';
+  console.log('📦 Upload area shown - user cancelled image selection');
   
   // Reset file input and current data
-  const fileInput = document.getElementById('fileInput');
-  if (fileInput) {
-    fileInput.value = '';
-    console.log('🔄 File input cleared');
-  }
+  const fileInput = getElement('fileInput');
+  fileInput.value = '';
+  console.log('🔄 File input cleared');
   
   currentImageData = null;
   currentAltText = null;
@@ -312,14 +291,9 @@ window.cancelImageSelection = function cancelImageSelection() {
  * @param {string} text - The alt text or error message to display
  */
 function updateAltTextResult(text) {
-  const resultEl = document.getElementById('altTextResult');
-  const actionsEl = document.getElementById('altTextActions');
-  const editorEl = document.getElementById('altTextEditor');
-  
-  if (!resultEl || !actionsEl || !editorEl) {
-    console.error('Alt text elements not found');
-    return;
-  }
+  const resultEl = getElement('altTextResult');
+  const actionsEl = getElement('altTextActions');
+  const editorEl = getElement('altTextEditor');
   
   if (text.startsWith('❌') || text.startsWith('⏹️')) {
     // Show error state
@@ -339,8 +313,8 @@ function updateAltTextResult(text) {
 /**
  * Handles accepting and posting the image with alt text
  */
-function acceptAndPostImage() {
-  const editorEl = document.getElementById('altTextEditor');
+export function acceptAndPostImage() {
+  const editorEl = getElement('altTextEditor');
   const imageData = currentImageData;
   
   if (!editorEl || !imageData) {
@@ -368,10 +342,10 @@ function acceptAndPostImage() {
   savePostedImage(postedImage);
   
   // Display in feed
-  displayPostedImage(postedImage);
+  window.displayPostedImage(postedImage);
   
   // Show comment section
-  showCommentSection();
+  window.showCommentSection();
   
   // Reset upload interface
   resetUploadInterface();
@@ -384,8 +358,8 @@ function acceptAndPostImage() {
  * @param {Object} imageData - The posted image data
  */
 window.displayPostedImage = function displayPostedImage(imageData) {
-  const postedImages = document.getElementById('postedImages');
-  const imagesFeed = document.getElementById('imagesFeed');
+  const postedImages = getElement('postedImages');
+  const imagesFeed = getElement('imagesFeed');
   
   if (!postedImages || !imagesFeed) {
     console.error('Posted images elements not found');
@@ -422,7 +396,7 @@ window.displayPostedImage = function displayPostedImage(imageData) {
  * Shows the comment section after an image is posted
  */
 window.showCommentSection = function showCommentSection() {
-  const commentSection = document.getElementById('commentSection');
+  const commentSection = getElement('commentSection');
   if (commentSection) {
     commentSection.style.display = 'block';
     console.log('💬 Comment section shown');
@@ -433,22 +407,18 @@ window.showCommentSection = function showCommentSection() {
  * Resets and hides the upload interface after posting
  */
 function resetUploadInterface() {
-  const uploadSection = document.getElementById('uploadSection');
-  const uploadArea = document.getElementById('uploadArea');
-  const preview = document.getElementById('imagePreview');
-  const actionsEl = document.getElementById('altTextActions');
-  const fileInput = document.getElementById('fileInput');
+  const uploadSection = getElement('uploadSection');
+  const uploadArea = getElement('uploadArea');
+  const preview = getElement('imagePreview');
+  const actionsEl = getElement('altTextActions');
+  const fileInput = getElement('fileInput');
   
   // Hide the entire upload section after successful posting
-  if (uploadSection) {
-    uploadSection.style.display = 'none';
-    console.log('📦 Upload section hidden after posting');
-  }
+  uploadSection.style.display = 'none';
+  console.log('📦 Upload section hidden after posting');
   
   // Make sure upload area is visible when section is shown again
-  if (uploadArea) {
-    uploadArea.style.display = 'block';
-  }
+  uploadArea.style.display = 'block';
   
   if (preview) preview.style.display = 'none';
   if (actionsEl) actionsEl.style.display = 'none';
@@ -459,4 +429,18 @@ function resetUploadInterface() {
   
   console.log('🔄 Upload interface reset and hidden');
 }
+
+// Make functions globally available for cross-module compatibility
+window.handleFileSelect = handleFileSelect;
+window.handleFile = handleFile;
+window.generateAltText = generateAltText;
+window.cancelImageSelection = cancelImageSelection;
+window.acceptAndPostImage = acceptAndPostImage;
+
+// Make current image data available globally (as a getter since it can change)
+Object.defineProperty(window, 'currentImageData', {
+  get: () => currentImageData
+});
+
+console.log('📤 Image upload module functions made globally available');
 
