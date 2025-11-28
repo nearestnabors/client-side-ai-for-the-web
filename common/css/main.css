@@ -203,6 +203,10 @@ button:focus {
   border-color: var(--color-accent);
 }
 
+button:hover:not(:disabled) {
+  transform: translateY(2px);
+}
+
 button:disabled {
   background: var(--color-text-muted);
   color: var(--color-bg-primary);
@@ -226,12 +230,6 @@ button:disabled {
   font-size: var(--font-size-base);
   flex: 1; /* For button groups */
 }
-
-.btn_submit:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-
 
 
 .status {
