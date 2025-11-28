@@ -143,6 +143,11 @@
   --color-bg-neutral-light: var(--sage-100);    /* Light neutral background */
   --color-bg-neutral-warm: var(--sand-100);     /* Warm neutral background */
 
+  /* Link Colors */
+  --color-link: var(--jean-25);
+  --color-link-hover: var(--color-accent);
+  --color-link-visited: var(--amethyst-300);
+
   /* State Colors */
   --color-success: var(--mint-900);             /* Success/positive actions */
   --color-success-light: var(--mint-100);       /* Light success backgrounds */
@@ -152,8 +157,8 @@
   --color-error-light: var(--raspberry-100);    /* Light error backgrounds */
   --color-error-bg: var(--raspberry-50);        /* Error background */
   
-  --color-warning: var(--tangerine-400);        /* Warning/caution states */
-  --color-warning-light: var(--tangerine-100);  /* Light warning backgrounds */
+  --color-warning: var(--tangerine-400); /* Warning/caution states */
+  --color-warning-text: var(--tangerine-700); /* Warning text color */
   --color-warning-bg: var(--tangerine-50);      /* Warning background */
 
   /* Brand & Accent Colors */

@@ -50,6 +50,15 @@ window.addEventListener('load', () => {
   }, 50);
   
   console.log('🎉 AI-powered image analysis and comment moderation app initialized');
+  
+  // Fade in the container after initialization with a slight delay
+  setTimeout(() => {
+    const container = document.querySelector('.container');
+    if (container) {
+      container.classList.add('loaded');
+      console.log('✨ Container fade-in animation triggered');
+    }
+  }, 200);
 });
 
 // Clear storage on page refresh as per requirements

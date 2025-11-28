@@ -38,16 +38,43 @@ body {
   position: relative;
 }
 
+a:link {
+  color: var(--color-link);
+}
+
+a:visited {
+  color: var(--color-link-visited);
+}
+
+a:hover, a:active {
+  color: var(--color-link-hover);
+}
+
 .container {
   background: var(--color-bg-primary);
   border-radius: var(--radius-non-interactive);
-  box-shadow:
-  -15px 0 45px -15px var(--color-accent), 15px 0 45px -15px var(--color-brand), 
-  0 -15px 45px -15px var(--color-accent), 0 15px 45px -15px var(--color-brand);
+  box-shadow:   -15px 0 15px -15px var(--mint-100), 15px 0 15px -15px var(--mint-100), 
+  0 -15px 15px -15px var(--mint-100), 0 15px 15px -15px var(--mint-100);
+
   max-width: 600px;
   width: 100%;
   padding: 0;
   margin: 20px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: 
+  box-shadow 250ms ease-out 250ms,
+  opacity 250ms ease-out,
+    transform 250ms ease-out
+  ;
+}
+
+.container.loaded {
+  box-shadow:
+  -15px 0 45px -15px var(--color-accent), 15px 0 45px -15px var(--color-brand), 
+  0 -15px 45px -15px var(--color-accent), 0 15px 45px -15px var(--color-brand);
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .post-header {
@@ -231,7 +258,7 @@ button:disabled {
 
 .status.blocked {
   background: var(--color-warning-bg);
-  color: var(--color-warning);
+  color: var(--color-warning-text);
   border-left: 4px solid var(--color-warning);
 }
 
@@ -358,18 +385,6 @@ button:disabled {
   position: absolute;
   bottom: 0;
   width: 100%;
-}
-
-.site-footer a {
-  color: #60a5fa;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s;
-}
-
-.site-footer a:hover {
-  color: var(--color-primary);
-  text-decoration: underline;
 }
 
 /* Upload Section Styles */
@@ -628,18 +643,10 @@ button:disabled {
   transform: translateX(100%);
 }
 
-/* Enhanced suggestion interface styles */
-.suggestion-interface {
-  margin-top: 16px;
-  border-top: 1px solid #e65100;
-  padding-top: 12px;
-}
-
 .suggestion-header h3 {
   margin: 0 0 12px 0;
-  color: #e65100;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
 }
 
 .suggestion-content {
