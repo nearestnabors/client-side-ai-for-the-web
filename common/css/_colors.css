@@ -1,0 +1,175 @@
+/**
+ * Color Design Tokens
+ * Complete color palette with semantic tokens for consistent UI
+ */
+
+:root {
+  /* Jean - Primary Blues/Grays */
+  --jean-25: #758BB9;
+  --jean-50: #677FB0;
+  --jean-100: #5A72A7;
+  --jean-200: #536897;
+  --jean-300: #4C5E87;
+  --jean-400: #445477;
+  --jean-500: #3D4A67;
+  --jean-600: #354058;
+  --jean-700: #2D3649;
+  --jean-800: #252C3A;
+  --jean-900: #1C212C;
+  --jean-950: #13161E;
+
+  /* Sage - Natural Greens */
+  --sage-25: #F4F5EC;
+  --sage-50: #E8ECDC;
+  --sage-100: #D4E3CC;
+  --sage-200: #CCDABC;
+  --sage-300: #C0D0AD;
+  --sage-400: #B4C59F;
+  --sage-500: #A8B890;
+  --sage-600: #9CB082;
+  --sage-700: #90A475;
+  --sage-800: #859967;
+  --sage-900: #78885F;
+  --sage-950: #6B7856;
+
+  /* Mint - Bright Greens */
+  --mint-25: #FAFFFB;
+  --mint-50: #D3FEDC;
+  --mint-100: #A5F0BE;
+  --mint-200: #88F6A2;
+  --mint-300: #6AF086;
+  --mint-400: #4AE76D;
+  --mint-500: #29E14F;
+  --mint-600: #1EC43E;
+  --mint-700: #1A9F32;
+  --mint-800: #167C27;
+  --mint-900: #11591C;
+  --mint-950: #0B3711;
+
+  /* Cyber - Electric Yellows */
+  --cyber-25: #FEFFEB;
+  --cyber-50: #FCFFC0;
+  --cyber-100: #FAFF99;
+  --cyber-200: #F8FF73;
+  --cyber-300: #F5FF4D;
+  --cyber-400: #F2FF27;
+  --cyber-500: #EEFF00;
+  --cyber-600: #CDD801;
+  --cyber-700: #ABB102;
+  --cyber-800: #888A03;
+  --cyber-900: #646303;
+  --cyber-950: #3E3D02;
+
+  /* Wine - Deep Purples */
+  --wine-25: #B75780;
+  --wine-50: #AD4C75;
+  --wine-100: #9D4668;
+  --wine-200: #8D4161;
+  --wine-300: #7D3857;
+  --wine-400: #6E354D;
+  --wine-500: #5F2F43;
+  --wine-600: #502839;
+  --wine-700: #41212F;
+  --wine-800: #321B25;
+  --wine-900: #24131A;
+  --wine-950: #160C10;
+
+  /* Raspberry - Bright Reds */
+  --raspberry-25: #FDE8F0;
+  --raspberry-50: #F9C5D9;
+  --raspberry-100: #F5A3C2;
+  --raspberry-200: #F082AB;
+  --raspberry-300: #EA6294;
+  --raspberry-400: #E4427D;
+  --raspberry-500: #DD2266;
+  --raspberry-600: #BA1F59;
+  --raspberry-700: #981B4C;
+  --raspberry-800: #76173D;
+  --raspberry-900: #551220;
+  --raspberry-950: #340C10;
+
+  /* Amethyst - Mid-tone Purples */
+  --amethyst-25: #FCF8FD;
+  --amethyst-50: #EDDDF3;
+  --amethyst-100: #DEC1E9;
+  --amethyst-200: #CDA5DE;
+  --amethyst-300: #BD8AD3;
+  --amethyst-400: #A86FC7;
+  --amethyst-500: #9955BB;
+  --amethyst-600: #8445A5;
+  --amethyst-700: #6D3C88;
+  --amethyst-800: #57326C;
+  --amethyst-900: #412750;
+  --amethyst-950: #2C1B36;
+
+  /* Tangerine - Warm Oranges */
+  --tangerine-25: #FFFCFA;
+  --tangerine-50: #FEE5D4;
+  --tangerine-100: #FCCEAF;
+  --tangerine-200: #F8B788;
+  --tangerine-300: #F3A169;
+  --tangerine-400: #ED8C48;
+  --tangerine-500: #E77327;
+  --tangerine-600: #CD5F1A;
+  --tangerine-700: #AB4D17;
+  --tangerine-800: #843C14;
+  --tangerine-900: #6D2C10;
+  --tangerine-950: #3E1C0B;
+
+  /* Sand - Warm Neutrals */
+  --sand-25: #F5F4EC;
+  --sand-50: #ECE4DC;
+  --sand-100: #E3DFCC;
+  --sand-200: #DAD38C;
+  --sand-300: #D0C7AD;
+  --sand-400: #C5BC9F;
+  --sand-500: #BBB090;
+  --sand-600: #B0A482;
+  --sand-700: #A49875;
+  --sand-800: #998C67;
+  --sand-900: #8B7D5F;
+  --sand-950: #786F56;
+
+  /* === SEMANTIC COLOR TOKENS === */
+  /* Use these tokens throughout your UI for consistency */
+
+  /* Text Colors */
+  --color-text-primary: var(--jean-900);        /* Main text color */
+  --color-text-secondary: var(--wine-950);      /* Alternative dark text */
+  --color-text-muted: var(--jean-600);          /* Muted/secondary text */
+
+  /* Background Colors */
+  --color-bg-primary: #ffffff;                  /* Main background */
+  --color-bg-secondary: var(--sage-25);         /* Secondary background */
+  --color-bg-neutral-light: var(--sage-100);    /* Light neutral background */
+  --color-bg-neutral-warm: var(--sand-100);     /* Warm neutral background */
+
+  /* State Colors */
+  --color-success: var(--mint-400);             /* Success/positive actions */
+  --color-success-light: var(--mint-100);       /* Light success backgrounds */
+  --color-success-bg: var(--mint-50);           /* Success background */
+  
+  --color-error: var(--raspberry-500);          /* Error/danger states */
+  --color-error-light: var(--raspberry-100);    /* Light error backgrounds */
+  --color-error-bg: var(--raspberry-50);        /* Error background */
+  
+  --color-warning: var(--tangerine-400);        /* Warning/caution states */
+  --color-warning-light: var(--tangerine-100);  /* Light warning backgrounds */
+  --color-warning-bg: var(--tangerine-50);      /* Warning background */
+
+  /* Brand & Accent Colors */
+  --color-brand: var(--amethyst-500);           /* Primary brand color */
+  --color-brand-light: var(--amethyst-100);     /* Light brand background */
+  --color-accent: var(--cyber-500);             /* High attention/accent */
+  --color-accent-light: var(--cyber-100);       /* Light accent background */
+
+  /* Interactive Colors */
+  --color-primary: var(--jean-500);             /* Primary interactive elements */
+  --color-primary-hover: var(--jean-600);       /* Primary hover state */
+  --color-primary-light: var(--jean-100);       /* Light primary background */
+
+  /* Border Colors */
+  --color-border-light: var(--sage-200);        /* Light borders */
+  --color-border-medium: var(--jean-300);       /* Medium borders */
+  --color-border-dark: var(--jean-600);         /* Dark borders */
+}

@@ -1,3 +1,12 @@
+/**
+ * Main Stylesheet
+ * Entry point for all styles with proper imports
+ */
+
+/* Import color design tokens */
+@import './_colors.css';
+
+/* === RESET & BASE STYLES === */
 * {
   margin: 0;
   padding: 0;
@@ -6,7 +15,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 50%, #dbeafe 100%);
+  background: linear-gradient(135deg, var(--sage-50) 0%, var(--sage-25) 50%, var(--sage-100) 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -17,9 +26,9 @@ body {
 }
 
 .container {
-  background: white;
+  background: var(--color-bg-primary);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 30px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 30px var(--jean-100);
   max-width: 600px;
   width: 100%;
   padding: 0;
@@ -30,15 +39,15 @@ body {
 
 .post-header {
   padding: 20px 20px 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+  border-bottom: 1px solid var(--color-border-light);
+  background: linear-gradient(to bottom, var(--sage-25) 0%, var(--color-bg-primary) 100%);
 }
 
 .post-image {
   width: 100%;
   display: block;
   object-fit: cover;
-  background: #f5f5f5;
+  background: var(--color-bg-neutral-light);
 }
 
 .post-content {
@@ -48,24 +57,24 @@ body {
 .image-wrapper {
   position: relative;
   width: 100%;
-  background: #000;
+  background: var(--jean-950);
 }
 
 h1 {
-  color: #2563eb;
+  color: var(--color-primary);
   margin-bottom: 10px;
   font-size: 28px;
-  text-shadow: 2px 2px 4px rgba(37, 99, 235, 0.2);
+  text-shadow: 2px 2px 4px var(--jean-200);
 }
 
 .post-header p {
-  color: #666;
+  color: var(--color-text-muted);
   margin-top: 10px;
   font-size: 14px;
 }
 
 h2 {
-  color: #333;
+  color: var(--color-text-primary);
   margin-top: 40px;
   margin-bottom: 20px;
   font-size: 22px;
@@ -73,7 +82,7 @@ h2 {
 }
 
 .subtitle {
-  color: #666;
+  color: var(--color-text-muted);
   margin-bottom: 30px;
   font-size: 14px;
 }
@@ -85,7 +94,7 @@ h2 {
 label {
   display: block;
   margin-bottom: 8px;
-  color: #333;
+  color: var(--color-text-primary);
   font-weight: 500;
   font-size: 14px;
 }
@@ -93,7 +102,7 @@ label {
 textarea {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--color-border-light);
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
@@ -104,7 +113,7 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--color-primary);
 }
 
 .button-group {
@@ -125,29 +134,29 @@ button {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--jean-400) 100%);
+  color: var(--color-bg-primary);
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 12px var(--jean-300);
 }
 
 .submit-btn:disabled {
-  background: #ccc;
+  background: var(--sage-300);
   cursor: not-allowed;
   transform: none;
 }
 
 .clear-btn {
-  background: #f5f5f5;
-  color: #666;
+  background: var(--color-bg-neutral-light);
+  color: var(--color-text-muted);
 }
 
 .clear-btn:hover {
-  background: #e0e0e0;
+  background: var(--color-border-light);
 }
 
 .status {
@@ -165,61 +174,61 @@ button {
 }
 
 .status.checking {
-  background: #e3f2fd;
-  color: #1976d2;
-  border-left: 4px solid #1976d2;
+  background: var(--jean-50);
+  color: var(--color-primary);
+  border-left: 4px solid var(--color-primary);
 }
 
 .status.blocked {
-  background: #fff3e0;
-  color: #e65100;
-  border-left: 4px solid #ff9800;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-left: 4px solid var(--color-warning);
 }
 
 .status.allowed {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border-left: 4px solid #4caf50;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-left: 4px solid var(--color-success);
 }
 
 .status.error {
-  background: #ffebee;
-  color: #c62828;
-  border-left: 4px solid #f44336;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border-left: 4px solid var(--color-error);
 }
 
 .suggestion {
   margin-top: 12px;
-  border-top: 1px solid #e65100;
+  border-top: 1px solid var(--color-warning);
   padding-top: 10px;
 }
 
 .api-status {
   padding: 12px;
-  background: #f5f5f5;
+  background: var(--color-bg-neutral-light);
   border-radius: 8px;
   margin-bottom: 20px;
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-muted);
   transition: opacity 0.5s ease-out;
 }
 
 .api-status.available {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .api-status.unavailable {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--color-error-bg);
+  color: var(--color-error);
 }
 
 .loading {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #2563eb;
+  border: 2px solid var(--sage-200);
+  border-top: 2px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-left: 8px;
@@ -235,7 +244,7 @@ button {
 }
 
 .comments-section h2 {
-  color: #333;
+  color: var(--color-text-primary);
   margin-bottom: 20px;
   font-size: 22px;
   margin-top: 0;
@@ -248,15 +257,15 @@ button {
 }
 
 .comment-item {
-  background: #f8fafc;
+  background: var(--color-bg-secondary);
   padding: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .comment-text {
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 14px;
   line-height: 1.6;
   margin-bottom: 8px;
@@ -267,17 +276,17 @@ button {
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-muted);
   margin-top: 8px;
 }
 
 .comment-author {
   font-weight: 600;
-  color: #2563eb;
+  color: var(--color-primary);
 }
 
 .comment-date {
-  color: #999;
+  color: var(--sage-600);
 }
 
 
@@ -308,26 +317,26 @@ button {
 }
 
 .site-footer a:hover {
-  color: #2563eb;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
 /* Upload Section Styles */
 .upload-section {
   padding: 20px 40px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-light);
   background: #fafafa;
 }
 
 .upload-section h2 {
   margin-top: 0;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 20px;
 }
 
 .upload-area {
-  border: 2px dashed #ddd;
+  border: 2px dashed var(--color-border-light);
   border-radius: 12px;
   padding: 40px 20px;
   text-align: center;
@@ -337,12 +346,12 @@ button {
 }
 
 .upload-area:hover {
-  border-color: #2563eb;
+  border-color: var(--color-primary);
   background: #f0f8ff;
 }
 
 .upload-area.dragover {
-  border-color: #2563eb;
+  border-color: var(--color-primary);
   background: #f0f8ff;
   transform: scale(1.02);
 }
@@ -358,14 +367,14 @@ button {
 }
 
 .upload-area p {
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0;
   font-size: 16px;
 }
 
 .image-preview {
   margin-top: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-light);
   border-radius: 12px;
   overflow: hidden;
   background: white;
@@ -389,9 +398,7 @@ button {
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0;
   transition: all 0.2s;
 }
 
@@ -413,17 +420,17 @@ button {
 
 .alt-text-section h3 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 16px;
 }
 
 .alt-text-result {
-  background: #f5f5f5;
+  background: var(--color-bg-neutral-light);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
   min-height: 60px;
-  border-left: 4px solid #2563eb;
+  border-left: 4px solid var(--color-primary);
 }
 
 .alt-text-result .loading {
@@ -431,7 +438,7 @@ button {
   width: 14px;
   height: 14px;
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #2563eb;
+  border-top: 2px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-left: 8px;
@@ -439,22 +446,22 @@ button {
 }
 
 .alt-text-result .alt-text {
-  color: #333;
+  color: var(--color-text-primary);
   line-height: 1.6;
   font-size: 14px;
 }
 
 .regenerate-btn {
   background: #f0f0f0;
-  color: #666;
-  border: 1px solid #ddd;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-light);
   padding: 8px 16px;
   font-size: 14px;
   border-radius: 6px;
 }
 
 .regenerate-btn:hover {
-  background: #e0e0e0;
+  background: var(--color-border-light);
   border-color: #ccc;
 }
 
@@ -465,18 +472,18 @@ button {
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-light);
 }
 
 .api-key-section h3 {
   margin: 0 0 12px 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 16px;
 }
 
 .api-key-section p {
   margin: 8px 0;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -489,7 +496,7 @@ button {
 .api-key-input input {
   flex: 1;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 14px;
   font-family: monospace;
@@ -497,11 +504,11 @@ button {
 
 .api-key-input input:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--color-primary);
 }
 
 .save-key-btn {
-  background: #2563eb;
+  background: var(--color-primary);
   color: white;
   border: none;
   padding: 12px 20px;
@@ -523,7 +530,7 @@ button {
 }
 
 .api-key-help a {
-  color: #2563eb;
+  color: var(--color-primary);
   text-decoration: none;
 }
 
@@ -534,7 +541,7 @@ button {
 /* Form section spacing */
 .form-group h3 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 16px;
 }
 
@@ -547,7 +554,7 @@ button {
   width: 100%;
   min-height: 80px;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
@@ -557,7 +564,7 @@ button {
 
 .alt-text-editor:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--color-primary);
 }
 
 .alt-text-buttons {
@@ -567,7 +574,7 @@ button {
 }
 
 .accept-btn {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  background: linear-gradient(135deg, var(--color-success) 0%, #66bb6a 100%);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -578,18 +585,17 @@ button {
 }
 
 .accept-btn:hover {
-  background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+  background: linear-gradient(135deg, #66bb6a 0%, var(--color-success) 100%);
 }
 
-/* Posted images feed styles */
+/* Posted images feed styles
 .posted-images {
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
-}
+} */
 
 .posted-images h2 {
-  color: #333;
+  color: var(--color-text-primary);
   margin-bottom: 20px;
   font-size: 20px;
   margin-top: 0;
@@ -605,7 +611,7 @@ button {
   background: #f8f9fa;
   border-radius: 12px;
   padding: 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-light);
 }
 
 .posted-image-item img {
@@ -626,7 +632,7 @@ button {
 .comment-section {
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-light);
 }
 
 /* Enhanced suggestion interface styles */
@@ -665,7 +671,7 @@ button {
 
 .suggestion-editor:focus {
   outline: none;
-  border-color: #ff9800;
+  border-color: var(--color-warning);
 }
 
 .suggestion-actions {
@@ -686,23 +692,23 @@ button {
 }
 
 .regenerate-btn {
-  background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+  background: linear-gradient(135deg, var(--color-warning) 0%, #ffb74d 100%);
   color: white;
-  border: 1px solid #ff9800;
+  border: 1px solid var(--color-warning);
 }
 
 .regenerate-btn:hover {
-  background: linear-gradient(135deg, #ffb74d 0%, #ff9800 100%);
+  background: linear-gradient(135deg, #ffb74d 0%, var(--color-warning) 100%);
   transform: translateY(-1px);
 }
 
 .submit-btn.suggestion-btn {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  background: linear-gradient(135deg, var(--color-success) 0%, #66bb6a 100%);
   color: white;
-  border: 1px solid #4caf50;
+  border: 1px solid var(--color-success);
 }
 
 .submit-btn.suggestion-btn:hover {
-  background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+  background: linear-gradient(135deg, #66bb6a 0%, var(--color-success) 100%);
   transform: translateY(-1px);
 }
