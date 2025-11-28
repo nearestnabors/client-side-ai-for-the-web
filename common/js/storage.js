@@ -4,7 +4,7 @@
  * Note: Images are not stored to avoid localStorage quota issues
  */
 
-import { escapeHtml, getElement } from './ui-helpers.js';
+import { escapeHtml, getElement, hideElement, showElement } from './ui-helpers.js';
 
 /**
  * Adds a new comment to the display and saves to localStorage
@@ -16,9 +16,9 @@ export function addComment(commentText) {
   const commentsHeader = getElement('commentsHeader');
   
   // Show the comments section
-  commentsSection.style.display = 'block';
+  showElement(commentsSection);
   if (commentsHeader) {
-    commentsHeader.style.display = 'block';
+    showElement(commentsHeader);
   }
   
   // Create the comment element
@@ -83,7 +83,7 @@ export function loadComments() {
     const commentsList = getElement('commentsList');
     
     if (comments.length > 0) {
-      commentsSection.style.display = 'block';
+      showElement(commentsSection);
       
       comments.forEach(comment => {
         const commentItem = document.createElement('div');
@@ -158,7 +158,7 @@ export function loadPostedImages() {
       
       // Hide upload section since we have posted images
       const uploadSection = getElement('uploadSection');
-      uploadSection.style.display = 'none';
+      hideElement(uploadSection);
       console.log('📦 Upload section hidden - images already posted');
       
       // Show comment section if images exist

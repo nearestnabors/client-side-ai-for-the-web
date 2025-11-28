@@ -57,6 +57,42 @@ export function safeElementOperation(id, callback) {
 }
 
 /**
+ * Utility functions for element visibility management using CSS classes
+ */
+export function hideElement(elementOrId) {
+  const element = typeof elementOrId === 'string' ? getElement(elementOrId) : elementOrId;
+  if (element) {
+    element.classList.add('hidden');
+    element.classList.remove('visible-block', 'visible-flex');
+  }
+}
+
+export function showElement(elementOrId, displayType = 'block') {
+  const element = typeof elementOrId === 'string' ? getElement(elementOrId) : elementOrId;
+  if (element) {
+    element.classList.remove('hidden');
+    if (displayType === 'flex') {
+      element.classList.add('visible-flex');
+      element.classList.remove('visible-block');
+    } else {
+      element.classList.add('visible-block');
+      element.classList.remove('visible-flex');
+    }
+  }
+}
+
+export function toggleElement(elementOrId, displayType = 'block') {
+  const element = typeof elementOrId === 'string' ? getElement(elementOrId) : elementOrId;
+  if (element) {
+    if (element.classList.contains('hidden')) {
+      showElement(element, displayType);
+    } else {
+      hideElement(element);
+    }
+  }
+}
+
+/**
  * Updates the submit button state based on API key availability and comment text
  */
 export function updateSubmitButton() {
@@ -81,9 +117,9 @@ export function updateUIState() {
   
   safeElementOperation('apiKeySection', (apiKeySection) => {
     if (hasApiKey) {
-      apiKeySection.style.display = 'none';
+      hideElement(apiKeySection);
     } else {
-      apiKeySection.style.display = 'block';
+      showElement(apiKeySection);
     }
   });
 }
@@ -249,9 +285,9 @@ export function setupEventListeners() {
       const actionsEl = getElement('altTextActions');
       const resultEl = getElement('altTextResult');
       
-      if (actionsEl) actionsEl.style.display = 'none';
+      hideElement(actionsEl);
       if (resultEl) {
-        resultEl.style.display = 'block';
+        showElement(resultEl);
         resultEl.innerHTML = `<div>🔄 Regenerating alt text... <span class="loading"></span></div>`;
       }
       
@@ -262,9 +298,9 @@ export function setupEventListeners() {
         console.error('❌ generateAltText or currentImageData not available');
         // Show error and restore interface
         if (resultEl) {
-          resultEl.innerHTML = `<div style="color: #c62828;">❌ Unable to regenerate - image data not available</div>`;
+          resultEl.innerHTML = `<div style="color: var(--color-error);">❌ Unable to regenerate - image data not available</div>`;
         }
-        if (actionsEl) actionsEl.style.display = 'block';
+        showElement(actionsEl);
       }
     });
   }

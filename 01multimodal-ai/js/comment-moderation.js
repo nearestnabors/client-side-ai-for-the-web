@@ -4,7 +4,7 @@
  */
 
 import { addComment } from '/common/js/storage.js';
-import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, parseGeminiResponse } from '/common/js/ui-helpers.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, parseGeminiResponse, hideElement, showElement } from '/common/js/ui-helpers.js';
 
 // Store the original problematic comment for regeneration
 let originalProblematicComment = null;
@@ -192,42 +192,27 @@ function clearStatus() {
  * Hides the comment form during processing/suggestion editing
  */
 function hideCommentForm() {
-  const commentEl = getElement('comment');
-  const submitBtn = getElement('btnSubmit');
-  
-  if (commentEl) commentEl.style.display = 'none';
-  if (submitBtn) submitBtn.style.display = 'none';
+  hideElement('comment');
+  hideElement('btnSubmit');
 }
 
 /**
  * Shows the comment form
  */
 function showCommentForm() {
-  const commentEl = getElement('comment');
   const submitBtn = getElement('btnSubmit');
   
-  if (commentEl) commentEl.style.display = 'block';
+  showElement('comment');
   if (submitBtn) {
-    submitBtn.style.display = 'block';
+    showElement(submitBtn);
     submitBtn.disabled = false;
     submitBtn.innerHTML = 'Submit Comment';
   }
   
   // Hide suggestion-specific elements
-  const suggestionActions = document.getElementById('suggestionActions');
-  if (suggestionActions) {
-    suggestionActions.style.display = 'none';
-  }
-  
-  const suggestionHeader = document.getElementById('suggestionHeader');
-  if (suggestionHeader) {
-    suggestionHeader.style.display = 'none';
-  }
-  
-  const originalReference = document.getElementById('originalReference');
-  if (originalReference) {
-    originalReference.style.display = 'none';
-  }
+  hideElement('suggestionActions');
+  hideElement('suggestionHeader');
+  hideElement('originalReference');
   
   updateSubmitButton();
 }
@@ -252,11 +237,8 @@ function showSuggestionForm(suggestion, originalComment = null) {
   if (!suggestionHeader) {
     suggestionHeader = document.createElement('h3');
     suggestionHeader.id = 'suggestionHeader';
+    suggestionHeader.className = 'suggestion-header';
     suggestionHeader.innerHTML = '💡 Try this instead...';
-    suggestionHeader.style.margin = '20px 0 8px 0';
-    suggestionHeader.style.color = 'var(--color-text-primary)';
-    suggestionHeader.style.fontSize = 'var(--font-size-base)';
-    suggestionHeader.style.fontWeight = 'var(--font-weight-bold)';
     
     // Insert before the form group
     const formGroup = document.querySelector('.form-group');
@@ -264,12 +246,12 @@ function showSuggestionForm(suggestion, originalComment = null) {
       formGroup.parentNode.insertBefore(suggestionHeader, formGroup);
     }
   }
-  suggestionHeader.style.display = 'block';
+  showElement(suggestionHeader);
   
   // Show the comment textarea with the suggestion
   if (commentEl) {
     commentEl.value = suggestion;
-    commentEl.style.display = 'block';
+    showElement(commentEl);
   }
   
   // Create or update original comment reference
@@ -277,10 +259,7 @@ function showSuggestionForm(suggestion, originalComment = null) {
   if (!originalReference) {
     originalReference = document.createElement('p');
     originalReference.id = 'originalReference';
-    originalReference.style.fontSize = 'var(--font-size-xs)';
-    originalReference.style.color = 'var(--color-text-muted)';
-    originalReference.style.margin = '8px 0 0 0';
-    originalReference.style.fontStyle = 'italic';
+    originalReference.className = 'original-comment-reference';
     
     // Insert after the form group
     const formGroup = document.querySelector('.form-group');
@@ -289,12 +268,10 @@ function showSuggestionForm(suggestion, originalComment = null) {
     }
   }
   originalReference.innerHTML = `Original post: "${escapeHtml(originalComment)}"`;
-  originalReference.style.display = 'block';
+  showElement(originalReference);
   
   // Replace the submit button with suggestion actions
-  if (submitBtn) {
-    submitBtn.style.display = 'none';
-  }
+  hideElement('btnSubmit');
   
   // Create suggestion actions if they don't exist
   let suggestionActions = document.getElementById('suggestionActions');
@@ -314,7 +291,7 @@ function showSuggestionForm(suggestion, originalComment = null) {
     }
   }
   
-  suggestionActions.style.display = 'flex';
+  showElement(suggestionActions, 'flex');
 }
 
 /**
@@ -331,31 +308,20 @@ function resetCommentForm() {
   const commentEl = getElement('comment');
   if (commentEl) {
     commentEl.value = '';
-    commentEl.style.display = 'block';
+    showElement(commentEl);
   }
   
   const submitBtn = getElement('btnSubmit');
   if (submitBtn) {
-    submitBtn.style.display = 'block';
+    showElement(submitBtn);
     submitBtn.disabled = false;
     submitBtn.innerHTML = 'Submit Comment';
   }
   
   // Hide suggestion-specific elements
-  const suggestionActions = document.getElementById('suggestionActions');
-  if (suggestionActions) {
-    suggestionActions.style.display = 'none';
-  }
-  
-  const suggestionHeader = document.getElementById('suggestionHeader');
-  if (suggestionHeader) {
-    suggestionHeader.style.display = 'none';
-  }
-  
-  const originalReference = document.getElementById('originalReference');
-  if (originalReference) {
-    originalReference.style.display = 'none';
-  }
+  hideElement('suggestionActions');
+  hideElement('suggestionHeader');
+  hideElement('originalReference');
   
   updateSubmitButton();
 }

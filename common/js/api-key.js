@@ -8,6 +8,27 @@
 
 // Note: Cannot import getElement due to circular dependency
 // We'll use document.getElementById directly in this module
+
+// Local utility functions for element visibility
+function hideElement(element) {
+  if (element) {
+    element.classList.add('hidden');
+    element.classList.remove('visible-block', 'visible-flex');
+  }
+}
+
+function showElement(element, displayType = 'block') {
+  if (element) {
+    element.classList.remove('hidden');
+    if (displayType === 'flex') {
+      element.classList.add('visible-flex');
+      element.classList.remove('visible-block');
+    } else {
+      element.classList.add('visible-block');
+      element.classList.remove('visible-flex');
+    }
+  }
+}
 import { showSuccessNotification } from './ui-helpers.js';
 
 // API key storage
@@ -144,7 +165,7 @@ function updateApiStatus(config) {
   const statusEl = document.getElementById('apiStatus');
   statusEl.textContent = message;
   statusEl.className = `api-status ${type}`;
-  statusEl.style.display = 'block';
+  showElement(statusEl);
   console.log(`📱 API status updated: ${message}`);
 }
 
@@ -155,13 +176,11 @@ function hideApiStatus() {
   const statusEl = document.getElementById('apiStatus');
   if (statusEl && statusEl.classList.contains('available')) {
     console.log('⏰ Auto-hiding API status message after 5 seconds');
-    statusEl.style.transition = 'opacity 0.5s ease-out';
-    statusEl.style.opacity = '0';
+    statusEl.classList.add('fade-out');
     
     setTimeout(() => {
-      statusEl.style.display = 'none';
-      statusEl.style.opacity = '1'; // Reset for next time
-      statusEl.style.transition = '';
+      hideElement(statusEl);
+      statusEl.classList.remove('fade-out');
     }, 500);
   }
 }
@@ -224,7 +243,7 @@ export function clearApiKey() {
 function showUploadSection() {
   const uploadSection = document.getElementById('uploadSection');
   if (uploadSection) {
-    uploadSection.style.display = 'block';
+    showElement(uploadSection);
     console.log('📤 Upload section shown - API key is available');
   }
 }
@@ -235,7 +254,7 @@ function showUploadSection() {
 function showApiKeySection() {
   const apiKeySection = document.getElementById('apiKeySection');
   if (apiKeySection) {
-    apiKeySection.style.display = 'block';
+    showElement(apiKeySection);
     console.log('🔑 API key section shown - configuration needed');
   }
 }
@@ -246,7 +265,7 @@ function showApiKeySection() {
 function hideUploadSection() {
   const uploadSection = document.getElementById('uploadSection');
   if (uploadSection) {
-    uploadSection.style.display = 'none';
+    hideElement(uploadSection);
     console.log('📤 Upload section hidden - API key required');
   }
 }

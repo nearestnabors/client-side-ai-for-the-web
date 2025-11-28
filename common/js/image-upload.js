@@ -4,7 +4,7 @@
  * Uses dependency injection for AI alt-text generation
  */
 
-import { escapeHtml, handleError, getElement, showSuccessNotification } from './ui-helpers.js';
+import { escapeHtml, handleError, getElement, showSuccessNotification, hideElement, showElement } from './ui-helpers.js';
 import { savePostedImage } from './storage.js';
 
 let currentImageData = null;
@@ -75,12 +75,12 @@ function displayImagePreview(dataUrl, fileName) {
   const uploadArea = getElement('uploadArea');
   
   // Hide the upload area once image is selected
-  uploadArea.style.display = 'none';
+  hideElement(uploadArea);
   console.log('📦 Upload area hidden - image selected for processing');
   
   img.src = dataUrl;
   img.alt = fileName;
-  preview.style.display = 'block';
+  showElement(preview);
 }
 
 /**
@@ -111,10 +111,10 @@ export async function generateAltText(imageData) {
       🤖 Analyzing image with AI... <span class="loading"></span>
     </div>
   `;
-  altTextResult.style.display = 'block';
+  showElement(altTextResult);
   
   if (regenerateBtn) {
-    regenerateBtn.style.display = 'none';
+    hideElement(regenerateBtn);
   }
   
   try {
@@ -157,7 +157,7 @@ export function cancelImageSelection() {
   const actionsEl = getElement('altTextActions');
   const altTextResult = getElement('altTextResult');
   
-  preview.style.display = 'none';
+  hideElement(preview);
   console.log('🔄 Image preview hidden');
   
   // Clear the preview image
@@ -165,14 +165,12 @@ export function cancelImageSelection() {
   previewImg.alt = '';
   console.log('🔄 Preview image cleared');
   
-  if (actionsEl) {
-    actionsEl.style.display = 'none';
-    console.log('🔄 Alt text actions hidden');
-  }
+  hideElement(actionsEl);
+  console.log('🔄 Alt text actions hidden');
   
   // Reset alt text result area
   altTextResult.innerHTML = '<div class="loading">Analyzing image with Gemini AI...</div>';
-  altTextResult.style.display = 'block';
+  showElement(altTextResult);
   console.log('🔄 Alt text result area reset');
   
   // Clear alt text editor if it exists
@@ -184,7 +182,7 @@ export function cancelImageSelection() {
   
   // Show upload area again
   const uploadArea = getElement('uploadArea');
-  uploadArea.style.display = 'block';
+  showElement(uploadArea);
   console.log('📦 Upload area shown - user cancelled image selection');
   
   // Reset file input and current data
@@ -208,19 +206,19 @@ function updateAltTextResult(text) {
   
   if (text.startsWith('❌') || text.startsWith('⏹️')) {
     // Show error state
-    resultEl.innerHTML = `<div style="color: #c62828;">${text}</div>`;
-    resultEl.style.display = 'block';
-    actionsEl.style.display = 'none';
+    resultEl.innerHTML = `<div style="color: var(--color-error);">${text}</div>`;
+    showElement(resultEl);
+    hideElement(actionsEl);
   } else {
     // Show success state with editing interface - hide result div, show editor
-    resultEl.style.display = 'none';
+    hideElement(resultEl);
     editorEl.value = text;
-    actionsEl.style.display = 'block';
+    showElement(actionsEl);
     
     // Make sure regenerate button is visible
     const regenerateBtn = getElement('btnRegenerate');
     if (regenerateBtn) {
-      regenerateBtn.style.display = 'block';
+      showElement(regenerateBtn);
     }
     
     console.log('✅ Alt text generated and editing interface shown');
@@ -287,7 +285,7 @@ window.displayPostedImage = function displayPostedImage(imageData) {
   }
   
   // Show the posted images section
-  postedImages.style.display = 'block';
+  showElement(postedImages);
   
   // Create image item
   const imageItem = document.createElement('div');
@@ -318,7 +316,7 @@ window.displayPostedImage = function displayPostedImage(imageData) {
 window.showCommentSection = function showCommentSection() {
   const commentSection = getElement('commentSection');
   if (commentSection) {
-    commentSection.style.display = 'block';
+    showElement(commentSection);
     console.log('💬 Comment section shown');
   }
 }
@@ -334,14 +332,14 @@ function resetUploadInterface() {
   const fileInput = getElement('fileInput');
   
   // Hide the entire upload section after successful posting
-  uploadSection.style.display = 'none';
+  hideElement(uploadSection);
   console.log('📦 Upload section hidden after posting');
   
   // Make sure upload area is visible when section is shown again
-  uploadArea.style.display = 'block';
+  showElement(uploadArea);
   
-  if (preview) preview.style.display = 'none';
-  if (actionsEl) actionsEl.style.display = 'none';
+  hideElement(preview);
+  hideElement(actionsEl);
   if (fileInput) fileInput.value = '';
   
   currentImageData = null;

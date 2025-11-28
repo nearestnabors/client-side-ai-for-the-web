@@ -642,4 +642,45 @@ button:disabled {
   flex: 0 0 auto; /* Don't grow in flex containers */
 }
 
+/* Original comment reference styling */
+.original-comment-reference {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: 8px 0 0 0;
+  font-style: italic;
+  background: var(--color-bg-secondary);
+  padding: 8px 12px;
+  border-radius: var(--radius-non-interactive);
+  border-left: 3px solid var(--color-warning);
+}
+
+/* Suggestion header styling */
+.suggestion-header {
+  margin: 20px 0 8px 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+
+/* === UTILITY CLASSES FOR DISPLAY CONTROL === */
+/* Use these instead of inline styles for better maintainability */
+
+.hidden {
+  display: none !important;
+}
+
+.visible-block {
+  display: block !important;
+}
+
+.visible-flex {
+  display: flex !important;
+}
+
+/* Fade transition utility */
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
 
