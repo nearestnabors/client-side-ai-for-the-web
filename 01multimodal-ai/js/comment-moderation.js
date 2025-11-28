@@ -23,7 +23,7 @@ export async function handleCommentSubmit(e) {
     return;
   }
   
-  const submitBtn = getElement('submitBtn');
+  const submitBtn = getElement('btnSubmit');
   submitBtn.disabled = true;
   submitBtn.innerHTML = 'Checking... <span class="loading"></span>';
   

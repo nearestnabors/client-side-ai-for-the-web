@@ -29,8 +29,8 @@
         <div id="imagePreview" class="image-preview" style="display: none">
           <div class="image-preview-header">
             <button
-              id="cancelImageBtn"
-              class="cancel-image-btn"
+              id="btnCancel"
+              class="btn_cancel"
               title="Cancel and choose different image"
             >
               ✕
@@ -53,10 +53,10 @@
                 placeholder="Edit alt text..."
               ></textarea>
               <div class="alt-text-buttons">
-                <button id="regenerateAltText" class="regenerate-btn">
+                <button id="btnRegenerate" class="btn_regenerate">
                   🔄 Regenerate
                 </button>
-                <button id="acceptAltText" class="accept-btn">
+                <button id="btnAccept" class="btn_accept">
                   ✅ Accept & Post Image
                 </button>
               </div>
@@ -80,7 +80,7 @@
               id="apiKeyInput"
               placeholder="Enter your Google AI API key"
             />
-            <button id="saveApiKey" class="save-key-btn">Save Key</button>
+            <button id="btnSave" class="btn_save">Save Key</button>
           </div>
           <p class="api-key-help">
             Get your API key from
@@ -110,7 +110,7 @@
             </div>
 
             <div class="button-group">
-              <button type="submit" class="submit-btn" id="submitBtn" disabled>
+              <button type="submit" class="btn_submit" id="btnSubmit" disabled>
                 Submit Comment
               </button>
             </div>

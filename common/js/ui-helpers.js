@@ -61,7 +61,7 @@ export function safeElementOperation(id, callback) {
  */
 export function updateSubmitButton() {
   safeElementOperation('comment', (commentEl) => {
-    safeElementOperation('submitBtn', (submitBtn) => {
+    safeElementOperation('btnSubmit', (submitBtn) => {
       const comment = commentEl.value.trim();
       submitBtn.disabled = !window.geminiApiKey || !comment;
     });
@@ -180,7 +180,7 @@ export function setupEventListeners() {
   }
   
   // Alt text regeneration
-  const regenerateBtn = getElement('regenerateAltText');
+  const regenerateBtn = getElement('btnRegenerate');
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', () => {
       if (window.currentImageData && window.generateAltText) {
@@ -192,7 +192,7 @@ export function setupEventListeners() {
   }
   
   // Accept and post image
-  const acceptBtn = getElement('acceptAltText');
+  const acceptBtn = getElement('btnAccept');
   if (acceptBtn) {
     acceptBtn.addEventListener('click', () => {
       if (window.acceptAndPostImage) {
@@ -204,7 +204,7 @@ export function setupEventListeners() {
   }
   
   // Cancel image selection
-  const cancelBtn = getElement('cancelImageBtn');
+  const cancelBtn = getElement('btnCancel');
   if (cancelBtn) {
     console.log('🔌 Setting up cancel image button event listener');
     cancelBtn.addEventListener('click', () => {

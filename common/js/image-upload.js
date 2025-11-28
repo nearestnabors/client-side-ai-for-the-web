@@ -104,7 +104,7 @@ export async function generateAltText(imageData) {
   
   // Show loading state
   const altTextResult = getElement('altTextResult');
-  const regenerateBtn = getElement('regenerateAltText');
+  const regenerateBtn = getElement('btnRegenerate');
   
   altTextResult.innerHTML = `
     <div>

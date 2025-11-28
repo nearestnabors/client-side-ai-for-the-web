@@ -171,7 +171,7 @@ function hideApiStatus() {
 export function setupApiKeyEventListeners() {
   console.log('🔌 Setting up API key event listeners...');
   
-  const saveButton = document.getElementById('saveApiKey');
+  const saveButton = document.getElementById('btnSave');
   const input = document.getElementById('apiKeyInput');
 
   // Check if elements exist before adding listeners (they may have been removed if API key is already saved)
