@@ -6,6 +6,13 @@
 /* Import color design tokens */
 @import './_colors.css';
 
+:root {
+  /* Jean - Primary Blues/Grays */
+  --radius-interactive-xl: 13px;
+  --radius-interactive: 3px;
+  --radius-non-interactive: 3px;
+}
+
 /* === RESET & BASE STYLES === */
 * {
   margin: 0;
@@ -31,7 +38,7 @@ body {
 
 .container {
   background: var(--color-bg-primary);
-  border-radius: 3px;
+  border-radius: var(--radius-non-interactive);
   box-shadow: 3px 3px 6px var(--color-accent), -3px -3px 6px var(--color-brand);
   max-width: 600px;
   width: 100%;
@@ -43,15 +50,12 @@ body {
 
 .post-header {
   padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--color-border-light);
-  background: linear-gradient(to bottom, var(--sage-25) 0%, var(--color-bg-primary) 100%);
 }
 
 .post-image {
   width: 100%;
   display: block;
   object-fit: cover;
-  background: var(--color-bg-neutral-light);
 }
 
 .post-content {
@@ -61,14 +65,12 @@ body {
 .image-wrapper {
   position: relative;
   width: 100%;
-  background: var(--jean-950);
 }
 
 h1 {
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   margin-bottom: 10px;
   font-size: 28px;
-  text-shadow: 2px 2px 4px var(--jean-200);
 }
 
 .post-header p {
@@ -103,21 +105,37 @@ label {
   font-size: 14px;
 }
 
+/* === UNIFIED INPUT STYLES === */
+/* Base input styles for text inputs and textareas */
+input[type="text"],
+input[type="password"],
+input[type="email"],
 textarea {
   width: 100%;
   padding: 12px;
-  border: 2px solid var(--color-border-light);
-  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-interactive);
   font-size: 14px;
   font-family: inherit;
-  resize: vertical;
-  min-height: 120px;
-  transition: border-color 0.3s;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: all 0.25s ease-out;
 }
 
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+/* Textarea specific styles */
+textarea {
+  resize: vertical;
+  min-height: 120px;
+  border-width: 2px; /* Slightly thicker for textareas */
 }
 
 .button-group {
@@ -126,70 +144,65 @@ textarea:focus {
   margin-top: 20px;
 }
 
+/* === UNIFIED BUTTON STYLES === */
+/* Base button styles - all buttons inherit these */
 button {
-  flex: 1;
-  padding: 14px 24px;
+  padding: 12px 20px;
   border: 1px solid var(--color-accent);
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: var(--radius-interactive);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease-out;
   background: transparent;
   color: var(--color-accent);
+  font-family: inherit;
 }
 
-button:hover, button:focus {
+button:hover,
+button:focus {
   color: #fff;
   border-color: var(--color-accent);
   box-shadow: 
     inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);  
+    inset 3.5em 0 0 0 var(--color-accent);
 }
 
+button:disabled {
+  background: var(--color-text-muted);
+  color: var(--color-bg-primary);
+  border-color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
 
-.btn_submit {
+/* Primary button variant - solid accent background */
+.btn_submit,
+.btn_accept,
+.btn_save {
   background: var(--color-accent);
   color: #fff;
-  border: 1px solid var(--color-accent);
+}
+
+/* Large button variant for main actions */
+.btn_submit {
+  padding: 14px 24px;
+  font-size: 16px;
+  flex: 1; /* For button groups */
 }
 
 .btn_submit:hover:not(:disabled) {
-  color: #fff;
-  border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
   transform: translateY(-2px);
 }
 
-.btn_submit:disabled {
-  background: var(--color-text-muted);
-  color: var(--color-bg-primary);
-  border: 1px solid var(--color-text-muted);
-  cursor: not-allowed;
-  transform: none;
-  opacity: 0.6;
-}
 
-.btn_clear {
-  background: transparent;
-  color: var(--color-accent);
-  border: 1px solid var(--color-accent);
-}
 
-.btn_clear:hover {
-  color: #fff;
-  border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
-}
 
 .status {
   margin-top: 20px;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-non-interactive);
   font-size: 14px;
   line-height: 1.6;
   display: none;
@@ -233,7 +246,7 @@ button:hover, button:focus {
 .api-status {
   padding: 12px;
   background: var(--color-bg-neutral-light);
-  border-radius: 8px;
+  border-radius: var(--radius-non-interactive);
   margin-bottom: 20px;
   font-size: 13px;
   color: var(--color-text-muted);
@@ -287,7 +300,7 @@ button:hover, button:focus {
   background: var(--color-bg-secondary);
   padding: 16px;
   border: 1px solid var(--color-border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-non-interactive);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -351,8 +364,6 @@ button:hover, button:focus {
 /* Upload Section Styles */
 .upload-section {
   padding: 20px 40px;
-  border-bottom: 1px solid var(--color-border-light);
-  background: #fafafa;
 }
 
 .upload-section h2 {
@@ -364,17 +375,17 @@ button:hover, button:focus {
 
 .upload-area {
   border: 2px dashed var(--color-border-light);
-  border-radius: 12px;
+  border-radius: var(--radius-interactive-xl);
   padding: 40px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: white;
+  background: var(--color-bg-secondary);
 }
 
 .upload-area:hover {
-  border-color: var(--color-primary);
-  background: #f0f8ff;
+  border-color: var(--mint-200);
+  background: var(--mint-900);
 }
 
 .upload-area.dragover {
@@ -401,10 +412,7 @@ button:hover, button:focus {
 
 .image-preview {
   margin-top: 20px;
-  border: 1px solid var(--color-border-light);
-  border-radius: 12px;
   overflow: hidden;
-  background: white;
   position: relative;
 }
 
@@ -438,7 +446,6 @@ button:hover, button:focus {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 8px 8px 0 0;
 }
 
 .alt-text-section {
@@ -452,8 +459,9 @@ button:hover, button:focus {
 }
 
 .alt-text-result {
-  background: var(--color-bg-neutral-light);
-  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-non-interactive);
   padding: 16px;
   margin-bottom: 16px;
   min-height: 60px;
@@ -478,23 +486,6 @@ button:hover, button:focus {
   font-size: 14px;
 }
 
-.btn_regenerate {
-  background: transparent;
-  color: var(--color-accent);
-  border: 1px solid var(--color-accent);
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 6px;
-  transition: all 0.25s ease-out;
-}
-
-.btn_regenerate:hover {
-  color: #fff;
-  border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
-}
 
 
 /* API Key Section Styles */
@@ -502,7 +493,7 @@ button:hover, button:focus {
   background: #f8f9fa;
   padding: 20px;
   margin-bottom: 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-interactive);
   border: 1px solid var(--color-border-light);
 }
 
@@ -526,37 +517,11 @@ button:hover, button:focus {
 
 .api-key-input input {
   flex: 1;
-  padding: 12px;
-  border: 1px solid var(--color-border-light);
-  border-radius: 6px;
-  font-size: 14px;
   font-family: monospace;
 }
 
-.api-key-input input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
 .btn_save {
-  background: var(--color-accent);
-  color: white;
-  border: 1px solid var(--color-accent);
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  flex: none;
-  transition: all 0.25s ease-out;
-}
-
-.btn_save:hover {
-  color: #fff;
-  border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
+  flex: none; /* Don't grow in flex containers */
 }
 
 .api-key-help {
@@ -587,20 +552,8 @@ button:hover, button:focus {
 }
 
 .alt-text-editor {
-  width: 100%;
   min-height: 80px;
-  padding: 12px;
-  border: 1px solid var(--color-border-light);
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
   margin-bottom: 12px;
-}
-
-.alt-text-editor:focus {
-  outline: none;
-  border-color: var(--color-primary);
 }
 
 .alt-text-buttons {
@@ -609,25 +562,6 @@ button:hover, button:focus {
   justify-content: flex-end;
 }
 
-.btn_accept {
-  background: var(--color-accent);
-  color: white;
-  border: 1px solid var(--color-accent);
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease-out;
-}
-
-.btn_accept:hover {
-  color: #fff;
-  border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
-}
 
 /* Posted images feed styles
 .posted-images {
@@ -649,16 +583,12 @@ button:hover, button:focus {
 }
 
 .posted-image-item {
-  background: #f8f9fa;
-  border-radius: 12px;
   padding: 16px;
-  border: 1px solid var(--color-border-light);
 }
 
 .posted-image-item img {
   width: 100%;
   height: auto;
-  border-radius: 8px;
   margin-bottom: 12px;
   display: block;
 }
@@ -692,27 +622,21 @@ button:hover, button:focus {
 
 .suggestion-content {
   background: #fff8e1;
-  border-radius: 8px;
   padding: 12px;
   border: 1px solid #ffcc02;
 }
 
 .suggestion-editor {
-  width: 100%;
   min-height: 80px;
   padding: 10px;
-  border: 1px solid #ffcc02;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
+  border-color: #ffcc02;
   margin-bottom: 12px;
   background: white;
 }
 
 .suggestion-editor:focus {
-  outline: none;
   border-color: var(--color-warning);
+  box-shadow: 0 0 0 2px var(--color-warning-bg);
 }
 
 .suggestion-actions {
@@ -721,38 +645,17 @@ button:hover, button:focus {
   flex-wrap: wrap;
 }
 
+/* Small button variant */
+.btn_suggestion,
+.btn_regenerate,
+.btn_accept {
+  padding: 8px 16px;
+}
+
 .btn_suggestion {
   padding: 8px 12px;
-  border: 1px solid var(--color-accent);
-  border-radius: 6px;
   font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease-out;
-  flex: 0 0 auto;
-  background: transparent;
-  color: var(--color-accent);
-}
-
-.btn_suggestion:hover {
-  color: #fff;
-  border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
+  flex: 0 0 auto; /* Don't grow in flex containers */
 }
 
 
-.btn_submit.btn_suggestion {
-  background: var(--color-accent);
-  color: white;
-  border: 1px solid var(--color-accent);
-}
-
-.btn_submit.btn_suggestion:hover {
-  color: #fff;
-  border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
-}

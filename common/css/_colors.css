@@ -134,8 +134,8 @@
   /* Use these tokens throughout your UI for consistency */
 
   /* Text Colors */
-  --color-text-primary: var(--sand-25);        /* Main text color */
-  --color-text-muted: var(--sand-400);          /* Muted/secondary text */
+  --color-text-primary: var(--sage-25);        /* Main text color */
+  --color-text-muted: var(--sage-400);          /* Muted/secondary text */
 
   /* Background Colors */
   --color-bg-primary: var(--jean-900);                  /* Main background */
@@ -144,7 +144,7 @@
   --color-bg-neutral-warm: var(--sand-100);     /* Warm neutral background */
 
   /* State Colors */
-  --color-success: var(--mint-400);             /* Success/positive actions */
+  --color-success: var(--mint-900);             /* Success/positive actions */
   --color-success-light: var(--mint-100);       /* Light success backgrounds */
   --color-success-bg: var(--mint-50);           /* Success background */
   
