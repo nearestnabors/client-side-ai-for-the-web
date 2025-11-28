@@ -593,7 +593,44 @@ button:disabled {
   margin-top: 24px;
 }
 
-/* Success notification styles */
+/* Status notification styles */
+.status-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: var(--radius-interactive);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-bg-primary) 50%, transparent);
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease-out;
+  z-index: 1000;
+}
+
+.status-notification.success {
+  background: var(--color-success);
+  color: white;
+}
+
+.status-notification.failure {
+  background: var(--color-error);
+  color: white;
+}
+
+.status-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.status-notification.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* Backward compatibility */
 .success-notification {
   position: fixed;
   top: 20px;

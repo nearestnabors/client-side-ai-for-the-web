@@ -21,7 +21,11 @@ export async function generateGeminiAltText(imageData, controller) {
   
   // Extract image data and detect MIME type
   const [mimeInfo, base64Data] = imageData.split(',');
-  const mimeType = mimeInfo.match(/data:([^;]+)/)[1];
+  const mimeMatch = mimeInfo.match(/data:([^;]+)/);
+  if (!mimeMatch || !mimeMatch[1]) {
+    throw new Error('Invalid image data format. Expected data URL with MIME type.');
+  }
+  const mimeType = mimeMatch[1];
   
   // Sending request to Gemini AI for alt-text generation
   

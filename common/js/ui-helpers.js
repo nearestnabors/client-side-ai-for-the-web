@@ -351,20 +351,21 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
 }
 
 /**
- * Shows a success notification that slides in and fades out
- * @param {string} message - The success message to display
+ * Shows a status notification that slides in and fades out
+ * @param {string} type - The notification type: 'success' or 'failure'
+ * @param {string} message - The message to display
  * @param {number} duration - How long to show the notification (default 3000ms)
  */
-export function showSuccessNotification(message, duration = 3000) {
+export function showStatusNotification(type, message, duration = 3000) {
   // Remove any existing notifications
-  const existingNotification = document.querySelector('.success-notification');
+  const existingNotification = document.querySelector('.status-notification');
   if (existingNotification) {
     existingNotification.remove();
   }
   
   // Create notification element
   const notification = document.createElement('div');
-  notification.className = 'success-notification';
+  notification.className = `status-notification ${type}`;
   notification.textContent = message;
   
   // Add to body
@@ -387,6 +388,13 @@ export function showSuccessNotification(message, duration = 3000) {
       }
     }, 300); // Match CSS transition duration
   }, duration);
-  
-  // Success notification shown
+}
+
+/**
+ * Shows a success notification that slides in and fades out (backward compatibility)
+ * @param {string} message - The success message to display
+ * @param {number} duration - How long to show the notification (default 3000ms)
+ */
+export function showSuccessNotification(message, duration = 3000) {
+  showStatusNotification('success', message, duration);
 }

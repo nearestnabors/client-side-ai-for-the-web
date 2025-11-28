@@ -4,8 +4,11 @@
  * Uses dependency injection for AI alt-text generation
  */
 
-import { escapeHtml, handleError, getElement, showSuccessNotification, hideElement, showElement } from './ui-helpers.js';
+import { escapeHtml, handleError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement } from './ui-helpers.js';
 import { savePostedImage } from './storage.js';
+
+// Constants
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 let currentImageData = null;
 let currentAltText = null;
@@ -42,13 +45,13 @@ export function handleFileSelect(e) {
 export function handleFile(file) {
   // Check if it's actually an image
   if (!file.type.startsWith('image/')) {
-    alert('Please select an image file');
+    showStatusNotification('failure', '❌ Please select an image file', 4000);
     return;
   }
   
-  // Check file size (10MB limit)
-  if (file.size > 10 * 1024 * 1024) {
-    alert('Image file is too large. Please select a file under 10MB.');
+  // Check file size
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    showStatusNotification('failure', '❌ Image file is too large. Please select a file under 10MB.', 4000);
     return;
   }
   
@@ -227,7 +230,7 @@ export function acceptAndPostImage() {
   
   const finalAltText = editorEl.value.trim();
   if (!finalAltText) {
-    alert('Please provide alt text before posting the image');
+    showStatusNotification('failure', '❌ Please provide alt text before posting the image', 4000);
     return;
   }
   
@@ -254,7 +257,7 @@ export function acceptAndPostImage() {
   resetUploadInterface();
   
   // Show success notification
-  showSuccessNotification('✅ Alt text added successfully!');
+  showStatusNotification('success', '✅ Alt text added successfully!');
 }
 
 /**
@@ -272,7 +275,7 @@ export function displayPostedImage(imageData) {
   // Show the posted images section
   showElement(postedImages);
   
-  // Create image item
+  // Create image item using DOM methods for security
   const imageItem = document.createElement('div');
   imageItem.className = 'posted-image-item';
   imageItem.dataset.imageId = imageData.id;
@@ -284,12 +287,22 @@ export function displayPostedImage(imageData) {
     minute: '2-digit'
   });
   
-  imageItem.innerHTML = `
-    <img src="${imageData.imageData}" alt="${escapeHtml(imageData.altText)}">
-    <div class="posted-image-meta">
-      <span>Posted ${timestamp}</span>
-    </div>
-  `;
+  // Create image element safely
+  const img = document.createElement('img');
+  img.src = imageData.imageData;
+  img.alt = imageData.altText; // Browser will handle escaping in alt attribute
+  
+  // Create meta container
+  const metaDiv = document.createElement('div');
+  metaDiv.className = 'posted-image-meta';
+  
+  const timestampSpan = document.createElement('span');
+  timestampSpan.textContent = `Posted ${timestamp}`;
+  metaDiv.appendChild(timestampSpan);
+  
+  // Assemble elements
+  imageItem.appendChild(img);
+  imageItem.appendChild(metaDiv);
   
   // Add to feed (newest first)
   imagesFeed.insertBefore(imageItem, imagesFeed.firstChild);

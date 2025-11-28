@@ -6,6 +6,9 @@
 
 import { escapeHtml, getElement, hideElement, showElement } from './ui-helpers.js';
 
+// Constants
+const MAX_POSTED_IMAGES = 5;
+
 /**
  * Adds a new comment to the display and saves to localStorage
  * @param {string} commentText - The comment text to add
@@ -124,9 +127,9 @@ export function savePostedImage(imageData) {
   
   postedImages.unshift(imageData); // Add to beginning (newest first)
   
-  // Keep only the last 5 images to avoid localStorage quota issues
-  if (postedImages.length > 5) {
-    postedImages = postedImages.slice(0, 5);
+  // Keep only the last N images to avoid localStorage quota issues
+  if (postedImages.length > MAX_POSTED_IMAGES) {
+    postedImages = postedImages.slice(0, MAX_POSTED_IMAGES);
   }
   
   localStorage.setItem('postedImages', JSON.stringify(postedImages));

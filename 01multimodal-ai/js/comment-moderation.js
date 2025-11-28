@@ -4,7 +4,7 @@
  */
 
 import { addComment } from '/common/js/storage.js';
-import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, parseGeminiResponse, hideElement, showElement } from '/common/js/ui-helpers.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, parseGeminiResponse, hideElement, showElement } from '/common/js/ui-helpers.js';
 import { getApiKey } from '/common/js/api-key.js';
 
 // Store the original problematic comment for regeneration
@@ -46,7 +46,7 @@ export async function handleCommentSubmit(e) {
       addComment(comment);
       
       // Show success notification and reset form
-      showSuccessNotification('💬 Comment posted successfully!');
+      showStatusNotification('success', '💬 Comment posted successfully!');
       clearStatus();
       resetCommentForm();
     }
@@ -122,15 +122,78 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
  * Shows status messages to the user with enhanced suggestion interface
  * @param {Object} config - Status configuration object
  * @param {string} config.type - Status type: 'checking', 'blocked', 'allowed', 'error'
- * @param {string} config.message - Main message to display
+ * @param {string} config.message - Main message to display (may contain HTML)
  * @param {string} [config.suggestion] - Optional suggestion text for alternatives
  */
 function showStatus(config) {
   const { type, message, suggestion = null } = config;
   const statusEl = getElement('status');
   statusEl.className = `status show ${type}`;
-  statusEl.innerHTML = message;
   
+  // Clear previous content
+  statusEl.textContent = '';
+  
+  // Parse HTML safely using DOMParser and create elements via DOM methods
+  // This prevents XSS while allowing safe HTML structure
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(message, 'text/html');
+  const bodyContent = doc.body;
+  
+  // Only allow safe HTML elements (h3, p, div, span, strong, em)
+  const allowedTags = ['h3', 'p', 'div', 'span', 'strong', 'em', 'br'];
+  
+  // Process nodes safely
+  const processNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      // Create text node with escaped content
+      const textNode = document.createTextNode(node.textContent);
+      return textNode;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const tagName = node.tagName.toLowerCase();
+      
+      // Only process allowed tags
+      if (allowedTags.includes(tagName)) {
+        const safeElement = document.createElement(tagName);
+        
+        // Copy only safe attributes (no event handlers)
+        Array.from(node.attributes).forEach(attr => {
+          const attrName = attr.name.toLowerCase();
+          // Only allow safe attributes (no 'on*' event handlers)
+          if (!attrName.startsWith('on') && 
+              ['class', 'id', 'style'].includes(attrName) || 
+              attrName.startsWith('data-')) {
+            safeElement.setAttribute(attrName, attr.value);
+          }
+        });
+        
+        // Recursively process children
+        Array.from(node.childNodes).forEach(child => {
+          const processedChild = processNode(child);
+          if (processedChild) {
+            safeElement.appendChild(processedChild);
+          }
+        });
+        
+        return safeElement;
+      }
+      // Skip disallowed tags
+      return null;
+    }
+    return null;
+  };
+  
+  // Process all nodes from the parsed HTML
+  Array.from(bodyContent.childNodes).forEach(node => {
+    const processedNode = processNode(node);
+    if (processedNode) {
+      statusEl.appendChild(processedNode);
+    }
+  });
+  
+  // If no content was added (e.g., plain text message), use textContent as fallback
+  if (statusEl.childNodes.length === 0) {
+    statusEl.textContent = message;
+  }
 }
 
 /**
@@ -247,11 +310,21 @@ function showSuggestionForm(suggestion, originalComment = null) {
   // Store original comment for regeneration
   originalProblematicComment = originalComment;
   
-  // Hide suggestion header (no longer needed)
-  const suggestionHeader = document.getElementById('suggestionHeader');
-  if (suggestionHeader) {
-    hideElement(suggestionHeader);
+  // Create or show suggestion header
+  let suggestionHeader = document.getElementById('suggestionHeader');
+  if (!suggestionHeader) {
+    suggestionHeader = document.createElement('h3');
+    suggestionHeader.id = 'suggestionHeader';
+    suggestionHeader.className = 'suggestion-header';
+    suggestionHeader.innerHTML = '💡 Try this instead';
+    
+    // Insert before the form group
+    const formGroup = document.querySelector('.form-group');
+    if (formGroup) {
+      formGroup.parentNode.insertBefore(suggestionHeader, formGroup);
+    }
   }
+  showElement(suggestionHeader);
   
   // Show the comment textarea with the suggestion
   if (commentEl) {

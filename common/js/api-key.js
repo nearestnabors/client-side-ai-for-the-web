@@ -9,27 +9,7 @@
 // Note: Cannot import getElement due to circular dependency
 // We'll use document.getElementById directly in this module
 
-// Local utility functions for element visibility
-function hideElement(element) {
-  if (element) {
-    element.classList.add('hidden');
-    element.classList.remove('visible-block', 'visible-flex');
-  }
-}
-
-function showElement(element, displayType = 'block') {
-  if (element) {
-    element.classList.remove('hidden');
-    if (displayType === 'flex') {
-      element.classList.add('visible-flex');
-      element.classList.remove('visible-block');
-    } else {
-      element.classList.add('visible-block');
-      element.classList.remove('visible-flex');
-    }
-  }
-}
-import { showSuccessNotification, clearDOMCache } from './ui-helpers.js';
+import { showSuccessNotification, showStatusNotification, clearDOMCache, hideElement, showElement } from './ui-helpers.js';
 
 // API key storage
 let geminiApiKey = null;
@@ -57,7 +37,7 @@ export function loadApiKey() {
     }
     
     // Show success notification
-    showSuccessNotification('🔑 API key ready! You can now analyze images.');
+    showStatusNotification('success', '🔑 API key ready! You can now analyze images.');
     
     // Show upload section since API key is available
     showUploadSection();
@@ -87,14 +67,14 @@ export function saveApiKey(customKey = null) {
   
   // Check if key is empty or still masked
   if (!key || key === MASKED_KEY_DISPLAY) {
-    alert('Please enter a valid API key');
+    showStatusNotification('failure', '❌ Please enter a valid API key', 4000);
     return false;
   }
   
   // Validate Google AI key format - Google AI keys start with 'AIza'
   if (!key.startsWith('AIza')) {
     // Google AI keys start with 'AIza'
-    alert('Invalid API key format. Google AI keys should start with "AIza"');
+    showStatusNotification('failure', '❌ Invalid API key format. Google AI keys should start with "AIza"', 4000);
     return false;
   }
   
@@ -117,7 +97,7 @@ export function saveApiKey(customKey = null) {
   }
   
   // Show success notification
-  showSuccessNotification('🔑 API key saved successfully!');
+  showStatusNotification('success', '🔑 API key saved successfully!');
   
   // Show upload section since API key is now available
   showUploadSection();
@@ -151,9 +131,11 @@ export function isApiKeyAvailable() {
 function updateApiStatus(config) {
   const { message, type } = config;
   const statusEl = document.getElementById('apiStatus');
-  statusEl.textContent = message;
-  statusEl.className = `api-status ${type}`;
-  showElement(statusEl);
+  if (statusEl) {
+    statusEl.textContent = message;
+    statusEl.className = `api-status ${type}`;
+    showElement(statusEl);
+  }
 }
 
 /**

@@ -11,6 +11,10 @@ import { generateGeminiAltText } from './generate-alt-text.js';
 // Import other modules to ensure they load and register their global functions
 import './comment-moderation.js';
 
+// Constants
+const INIT_DELAY_MS = 50; // Delay to ensure all modules are loaded
+const FADE_IN_DELAY_MS = 200; // Delay before container fade-in animation
+
 /**
  * Initializes the application when the page loads
  * Sets up all modules and loads saved data
@@ -35,7 +39,7 @@ window.addEventListener('load', () => {
     
     // Update UI based on current state
     updateUIState();
-  }, 50); // Small delay ensures all modules are fully loaded
+  }, INIT_DELAY_MS);
   
   // Fade in the container after initialization with a slight delay
   setTimeout(() => {
@@ -43,7 +47,7 @@ window.addEventListener('load', () => {
     if (container) {
       container.classList.add('loaded');
     }
-  }, 200);
+  }, FADE_IN_DELAY_MS);
 });
 
 // Clear storage on page refresh as per requirements
