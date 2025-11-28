@@ -134,13 +134,12 @@
   /* Use these tokens throughout your UI for consistency */
 
   /* Text Colors */
-  --color-text-primary: var(--jean-900);        /* Main text color */
-  --color-text-secondary: var(--wine-950);      /* Alternative dark text */
-  --color-text-muted: var(--jean-600);          /* Muted/secondary text */
+  --color-text-primary: var(--sand-25);        /* Main text color */
+  --color-text-muted: var(--sand-400);          /* Muted/secondary text */
 
   /* Background Colors */
-  --color-bg-primary: #ffffff;                  /* Main background */
-  --color-bg-secondary: var(--sage-25);         /* Secondary background */
+  --color-bg-primary: var(--jean-900);                  /* Main background */
+  --color-bg-secondary: var(--cyber-900);         /* Secondary background */
   --color-bg-neutral-light: var(--sage-100);    /* Light neutral background */
   --color-bg-neutral-warm: var(--sand-100);     /* Warm neutral background */
 
@@ -158,10 +157,10 @@
   --color-warning-bg: var(--tangerine-50);      /* Warning background */
 
   /* Brand & Accent Colors */
-  --color-brand: var(--amethyst-500);           /* Primary brand color */
-  --color-brand-light: var(--amethyst-100);     /* Light brand background */
-  --color-accent: var(--cyber-500);             /* High attention/accent */
-  --color-accent-light: var(--cyber-100);       /* Light accent background */
+  --color-brand: var(--cyber-500);           /* Primary brand color */
+  --color-brand-light: var(--cyber-100);     /* Light brand background */
+  --color-accent: var(--amethyst-200);             /* High attention/accent */
+  --color-accent-light: var(--amethyst-50);       /* Light accent background */
 
   /* Interactive Colors */
   --color-primary: var(--jean-500);             /* Primary interactive elements */
