@@ -71,29 +71,13 @@ async function analyzeComment(comment) {
     body: JSON.stringify({
       contents: [{
         parts: [{
-          text: `Analyze this comment and determine if it contains problematic content. Return your response as a JSON object with these exact fields:
+          text: `Is this comment toxic? Return only JSON: {"isProblematic": true/false, "reason": "brief reason", "suggestion": "better version"}
 
-{
-  "isProblematic": boolean,
-  "reason": "Brief explanation if problematic",
-  "suggestion": "Rephrase the comment to be more constructive and respectful but capture the poster's original intent."
-}
-
-Consider these factors when analyzing:
-- Personal attacks or insults
-- Hostile or aggressive tone
-- Inappropriate sexual content
-- Discriminatory language
-- Intent to provoke rather than engage constructively
-- Lack of respect for others
-
-Constructive criticism, genuine questions, and polite disagreements are acceptable.
-
-Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
+"${comment.replace(/"/g, '\\"')}"`
         }]
       }],
       generationConfig: {
-        maxOutputTokens: 1000,
+        maxOutputTokens: 1500,
         temperature: 0.3
       }
     })

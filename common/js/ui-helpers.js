@@ -155,21 +155,27 @@ export function parseGeminiResponse(data, context = 'API call') {
         responseText = candidate.content.text;
       } else if (candidate.text) {
         responseText = candidate.text;
+      } else if (candidate.output) {
+        responseText = candidate.output;
       }
     }
     
-    // Log if response was truncated
+    // Log if response was truncated but still try to extract text
     if (candidate.finishReason === 'MAX_TOKENS') {
-      console.warn(`${context} response was truncated due to MAX_TOKENS`);
+      console.warn(`${context} response was truncated due to MAX_TOKENS, but attempting to extract partial response`);
+      // Don't return early - we might still have usable partial content
     }
   }
   
   if (!responseText) {
     console.error(`No response text found in ${context} response:`, data);
+    console.error('Candidate object:', candidate);
+    console.error('Available keys in candidate:', candidate ? Object.keys(candidate) : 'No candidate');
+    console.error('Full candidate content object:', candidate?.content);
     
-    // Provide helpful error message based on finish reason
+    // For truncated responses, provide a different error message
     if (candidate?.finishReason === 'MAX_TOKENS') {
-      throw new Error(`${context} response was truncated due to token limit. The request may be too complex. Please try a shorter input.`);
+      throw new Error(`${context} response was truncated and no readable content was found. Please try with a shorter input or increase maxOutputTokens.`);
     } else if (candidate?.finishReason) {
       throw new Error(`${context} response finished with reason: ${candidate.finishReason}. Unable to process request.`);
     } else {
