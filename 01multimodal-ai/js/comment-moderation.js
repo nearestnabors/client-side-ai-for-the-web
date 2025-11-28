@@ -71,9 +71,20 @@ async function analyzeComment(comment) {
     body: JSON.stringify({
       contents: [{
         parts: [{
-          text: `Is this comment toxic? Return only JSON: {"isProblematic": true/false, "reason": "brief reason", "suggestion": "better version"}
+          text: `You are a comment moderator for a constructive discussion platform. Analyze this comment and flag it as problematic if it contains:
 
-"${comment.replace(/"/g, '\\"')}"`
+- Personal attacks, insults, or harassment
+- Hate speech or discriminatory language  
+- Excessive negativity without constructive feedback
+- Hostile, aggressive, or inflammatory tone
+- Comments that could discourage participation (like "Hate it!" or "This sucks!" without explanation)
+- Bad faith arguments or trolling behavior
+
+Even simple negative statements should be flagged if they don't provide constructive feedback or seem designed to be discouraging.
+
+Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about appearance of photos, not about philosphical disagreements. The suggestion should be written as though by the author of the original comment."}
+
+Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
         }]
       }],
       generationConfig: {
