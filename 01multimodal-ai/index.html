@@ -9,7 +9,7 @@
   <body>
     <div class="container">
       <div class="post-header">
-        <h1>🤖 AI-Powered Image Analysis & Comment Moderation</h1>
+        <h1>AI-Powered Image Analysis & Comment Moderation</h1>
         <p>
           Upload an image and let Google's Gemini AI analyze it and generate
           alt-text. Add comments and see how AI moderates them for constructive
@@ -18,7 +18,6 @@
       </div>
 
       <div class="upload-section" id="uploadSection">
-        <h2>📸 Upload Image</h2>
         <div class="upload-area" id="uploadArea">
           <div class="upload-content">
             <div class="upload-icon">📁</div>
@@ -38,7 +37,7 @@
           </div>
           <img id="previewImg" class="preview-image" alt="Uploaded image" />
           <div id="altTextSection" class="alt-text-section">
-            <h3>🔍 AI-Generated Alt Text</h3>
+            <h3>AI-Generated Alt Text</h3>
             <div id="altTextResult" class="alt-text-result">
               <div class="loading">Analyzing image with Gemini AI...</div>
             </div>
@@ -66,13 +65,12 @@
       </div>
 
       <div class="post-content">
-        <div id="apiStatus" class="api-status" style="display: none;"></div>
+        <div id="apiStatus" class="api-status" style="display: none"></div>
 
         <div class="api-key-section" id="apiKeySection">
-          <h3>🔑 Google AI Configuration</h3>
+          <h3>🔑 Gemini API Configuration</h3>
           <p>
-            Enter your Google AI API key to enable image analysis and comment
-            moderation:
+            Enter your API key to enable image analysis and comment moderation:
           </p>
           <div class="api-key-input">
             <input
@@ -92,7 +90,6 @@
 
         <!-- Posted Images Feed -->
         <div id="postedImages" class="posted-images" style="display: none">
-          <h2>📷 Your Posted Images</h2>
           <div id="imagesFeed" class="images-feed"></div>
         </div>
 
@@ -100,7 +97,6 @@
         <div id="commentSection" class="comment-section" style="display: none">
           <form id="commentForm">
             <div class="form-group">
-              <h3>💬 Add a Comment</h3>
               <textarea
                 id="comment"
                 name="comment"
