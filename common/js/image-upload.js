@@ -4,7 +4,7 @@
  * Uses dependency injection for AI alt-text generation
  */
 
-import { escapeHtml, handleError, getElement } from './ui-helpers.js';
+import { escapeHtml, handleError, getElement, showSuccessNotification } from './ui-helpers.js';
 import { savePostedImage } from './storage.js';
 
 let currentImageData = null;
@@ -260,6 +260,9 @@ export function acceptAndPostImage() {
   
   // Reset upload interface
   resetUploadInterface();
+  
+  // Show success notification
+  showSuccessNotification('✅ Alt text added successfully!');
   
   console.log('🎉 Image posted successfully!');
 }

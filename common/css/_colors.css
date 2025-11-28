@@ -135,7 +135,7 @@
 
   /* Text Colors */
   --color-text-primary: var(--sage-25);        /* Main text color */
-  --color-text-muted: var(--sage-400);          /* Muted/secondary text */
+  --color-text-muted: var(--sage-100);          /* Muted/secondary text */
 
   /* Background Colors */
   --color-bg-primary: var(--jean-900);                  /* Main background */

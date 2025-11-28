@@ -237,5 +237,46 @@ export function setupEventListeners() {
   console.log('✅ All event listeners setup complete');
 }
 
+/**
+ * Shows a success notification that slides in and fades out
+ * @param {string} message - The success message to display
+ * @param {number} duration - How long to show the notification (default 3000ms)
+ */
+export function showSuccessNotification(message, duration = 3000) {
+  // Remove any existing notifications
+  const existingNotification = document.querySelector('.success-notification');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'success-notification';
+  notification.textContent = message;
+  
+  // Add to body
+  document.body.appendChild(notification);
+  
+  // Trigger show animation
+  requestAnimationFrame(() => {
+    notification.classList.add('show');
+  });
+  
+  // Schedule fade out and removal
+  setTimeout(() => {
+    notification.classList.add('fade-out');
+    notification.classList.remove('show');
+    
+    // Remove from DOM after animation completes
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300); // Match CSS transition duration
+  }, duration);
+  
+  console.log('✅ Success notification shown:', message);
+}
+
 // Make clearDOMCache globally available for other modules
 window.clearDOMCache = clearDOMCache;

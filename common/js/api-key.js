@@ -8,6 +8,7 @@
 
 // Note: Cannot import getElement due to circular dependency
 // We'll use document.getElementById directly in this module
+import { showSuccessNotification } from './ui-helpers.js';
 
 // API key storage
 let geminiApiKey = null;
@@ -38,12 +39,8 @@ export function loadApiKey() {
       }
     }
     
-    updateApiStatus({ message: '✅ Google AI API key configured. Ready to analyze images and comments!', type: 'available' });
-    
-    // Auto-hide the success message after 5 seconds
-    setTimeout(() => {
-      hideApiStatus();
-    }, 5000);
+    // Show success notification
+    showSuccessNotification('🔑 API key ready! You can now analyze images.');
   } else {
     console.log('⚠️ No saved API key found');
     // API configuration section is already visible, no need for redundant status message
@@ -101,12 +98,8 @@ export function saveApiKey(customKey = null) {
     }
   }
   
-  updateApiStatus({ message: '✅ API key saved! Ready to analyze images and comments.', type: 'available' });
-  
-  // Auto-hide the success message after 5 seconds
-  setTimeout(() => {
-    hideApiStatus();
-  }, 5000);
+  // Show success notification
+  showSuccessNotification('🔑 API key saved successfully!');
   
   console.log('🔑 Global geminiApiKey updated:', !!geminiApiKey);
   console.log('🎉 API key successfully saved and UI updated');

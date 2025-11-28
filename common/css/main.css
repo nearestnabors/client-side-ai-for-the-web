@@ -61,7 +61,7 @@ body {
 }
 
 .post-content {
-  padding: 20px 40px 40px;
+  margin: 20px 40px 40px;
 }
 
 .image-wrapper {
@@ -462,7 +462,7 @@ button:disabled {
 }
 
 .alt-text-section {
-  padding: 20px 0;
+  padding: 20px 0 0;
 }
 
 .alt-text-section h3 {
@@ -597,6 +597,35 @@ button:disabled {
 /* Comment section improvements */
 .comment-section {
   margin-top: 24px;
+}
+
+/* Success notification styles */
+.success-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--color-success);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-interactive);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease-out;
+  z-index: 1000;
+}
+
+.success-notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.success-notification.fade-out {
+  opacity: 0;
+  transform: translateX(100%);
 }
 
 /* Enhanced suggestion interface styles */
