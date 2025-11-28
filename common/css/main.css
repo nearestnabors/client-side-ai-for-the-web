@@ -151,7 +151,8 @@ input[type="email"],
 textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid var(--color-border-light);
+  border: 1px solid var(--color-border);
+  border-image: var(--color-border-gradient);
   border-radius: var(--radius-interactive);
   font-size: var(--font-size-sm);
   font-family: var(--font-text-primary);
@@ -200,9 +201,6 @@ button:hover,
 button:focus {
   color: #fff;
   border-color: var(--color-accent);
-  box-shadow: 
-    inset -3.5em 0 0 0 var(--color-accent),
-    inset 3.5em 0 0 0 var(--color-accent);
 }
 
 button:disabled {
@@ -251,9 +249,9 @@ button:disabled {
 }
 
 .status.checking {
-  background: var(--jean-50);
-  color: var(--color-primary);
-  border-left: 4px solid var(--color-primary);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-left: 4px solid var(--color-success);
 }
 
 .status.blocked {
@@ -336,7 +334,7 @@ button:disabled {
 .comment-item {
   background: var(--color-bg-secondary);
   padding: 16px;
-  border: 1px solid var(--color-border-light);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-non-interactive);
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -402,7 +400,7 @@ button:disabled {
 }
 
 .upload-area {
-  border: 2px dashed var(--color-border-light);
+  border: 2px dashed var(--color-border);
   border-radius: var(--radius-interactive-xl);
   padding: 40px 20px;
   text-align: center;
@@ -524,7 +522,8 @@ button:disabled {
   padding: 20px;
   margin-bottom: 20px;
   border-radius: var(--radius-interactive);
-  border: 1px solid var(--color-border-light);
+  border: 1px solid var(--color-border);
+  border-image: var(--color-border-gradient);
 }
 
 .api-key-section h3 {
@@ -557,14 +556,9 @@ button:disabled {
 }
 
 .api-key-help {
-  font-size: 13px !important;
-  color: #888 !important;
-  margin-top: 8px !important;
-}
-
-.api-key-help a {
-  color: var(--color-primary);
-  text-decoration: none;
+  font-size: var(--font-size-sm);
+  color: var(--sage-600) !important;
+  margin-top: 8px;
 }
 
 .api-key-help a:hover {

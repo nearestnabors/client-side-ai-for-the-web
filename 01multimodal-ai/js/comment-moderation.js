@@ -6,6 +6,9 @@
 import { addComment } from '/common/js/storage.js';
 import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification } from '/common/js/ui-helpers.js';
 
+// Store the original problematic comment for regeneration
+let originalProblematicComment = null;
+
 /**
  * Handles comment form submission
  * Validates the comment with AI before posting
@@ -31,18 +34,19 @@ export async function handleCommentSubmit(e) {
     const analysis = await analyzeComment(comment);
     
     if (analysis.isProblematic) {
-      // Keep form hidden and show suggestion editing interface
+      // Show blocked status and setup suggestion editing in the comment form
       showStatus({
         type: 'blocked',
-        message: `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>`,
-        suggestion: analysis.suggestion
+        message: `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>`
       });
+      showSuggestionForm(analysis.suggestion);
     } else {
       // Accept good comments and post them
       addComment(comment);
       
       // Show success notification and reset form
       showSuccessNotification('💬 Comment posted successfully!');
+      clearStatus();
       resetCommentForm();
     }
   } catch (error) {
@@ -173,24 +177,6 @@ function showStatus(config) {
   statusEl.className = `status show ${type}`;
   statusEl.innerHTML = message;
   
-  if (suggestion && type === 'blocked') {
-    const suggestionDiv = document.createElement('div');
-    suggestionDiv.className = 'suggestion-interface';
-    suggestionDiv.innerHTML = `
-      <div class="suggestion-header">
-        <h3>💡 Here's a friendlier way to say it:</h3>
-      </div>
-      <div class="suggestion-content">
-        <textarea class="suggestion-editor" id="suggestionEditor">${escapeHtml(suggestion)}</textarea>
-        <div class="suggestion-actions">
-          <button class="btn_suggestion" onclick="regenerateSuggestion()">🔄 Regenerate</button>
-          <button class="btn_suggestion btn_submit" onclick="submitSuggestion()">✅ Submit</button>
-          <button class="btn_suggestion" onclick="cancelSuggestion()">❌ Cancel</button>
-        </div>
-      </div>
-    `;
-    statusEl.appendChild(suggestionDiv);
-  }
 }
 
 /**
@@ -199,22 +185,31 @@ function showStatus(config) {
 export function regenerateSuggestion() {
   console.log('🔄 Regenerating comment suggestion');
   
-  const commentInput = getElement('comment');
-  const originalComment = commentInput.value.trim();
+  // Get the original problematic comment from storage
+  const originalComment = originalProblematicComment;
+  if (!originalComment) {
+    console.error('Cannot regenerate - original comment not found');
+    showStatus({ type: 'error', message: 'Unable to regenerate suggestion. Please try canceling and resubmitting.' });
+    return;
+  }
   
   // Show regenerating status
   showStatus({ type: 'checking', message: '🔄 Generating a new suggestion...' });
   
-  // Re-analyze the original comment to get a new suggestion
+  // Generate a new suggestion for the original problematic comment
   analyzeComment(originalComment)
     .then(analysis => {
       if (analysis.isProblematic && analysis.suggestion) {
-        showStatus({ type: 'blocked', message: analysis.reason, suggestion: analysis.suggestion });
+        showStatus({ type: 'blocked', message: `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>` });
+        // Update the textarea with the new suggestion (without recreating the whole interface)
+        const commentEl = getElement('comment');
+        if (commentEl) {
+          commentEl.value = analysis.suggestion;
+        }
       } else {
-        // If it's no longer problematic, allow submission
-        clearStatus();
-        showStatus({ type: 'allowed', message: '✅ Comment looks good now! You can submit it.' });
-        setTimeout(clearStatus, 3000);
+        // This shouldn't happen since we're re-analyzing the original problematic comment
+        // But if it does, show an error
+        showStatus({ type: 'error', message: 'Unable to generate a new suggestion. Please try again.' });
       }
     })
     .catch(error => {
@@ -227,9 +222,9 @@ export function regenerateSuggestion() {
  * Submits the suggested comment text
  */
 export function submitSuggestion() {
-  const suggestionEditor = getElement('suggestionEditor');
+  const commentEl = getElement('comment');
   
-  const suggestedText = suggestionEditor.value.trim();
+  const suggestedText = commentEl.value.trim();
   
   console.log('✅ Submitting AI-suggested comment');
   
@@ -276,7 +271,108 @@ function showCommentForm() {
     submitBtn.innerHTML = 'Submit Comment';
   }
   
+  // Hide suggestion-specific elements
+  const suggestionActions = document.getElementById('suggestionActions');
+  if (suggestionActions) {
+    suggestionActions.style.display = 'none';
+  }
+  
+  const suggestionHeader = document.getElementById('suggestionHeader');
+  if (suggestionHeader) {
+    suggestionHeader.style.display = 'none';
+  }
+  
+  const originalReference = document.getElementById('originalReference');
+  if (originalReference) {
+    originalReference.style.display = 'none';
+  }
+  
   updateSubmitButton();
+}
+
+/**
+ * Shows the suggestion editing form using the main comment textarea
+ */
+function showSuggestionForm(suggestion, originalComment = null) {
+  const commentEl = getElement('comment');
+  const submitBtn = getElement('btnSubmit');
+  
+  // If no original comment provided, get it from the current textarea value
+  if (!originalComment) {
+    originalComment = commentEl ? commentEl.value : '';
+  }
+  
+  // Store original comment for regeneration
+  originalProblematicComment = originalComment;
+  
+  // Create suggestion header if it doesn't exist
+  let suggestionHeader = document.getElementById('suggestionHeader');
+  if (!suggestionHeader) {
+    suggestionHeader = document.createElement('h3');
+    suggestionHeader.id = 'suggestionHeader';
+    suggestionHeader.innerHTML = '💡 Try this instead...';
+    suggestionHeader.style.margin = '20px 0 8px 0';
+    suggestionHeader.style.color = 'var(--color-text-primary)';
+    suggestionHeader.style.fontSize = 'var(--font-size-base)';
+    suggestionHeader.style.fontWeight = 'var(--font-weight-bold)';
+    
+    // Insert before the form group
+    const formGroup = document.querySelector('.form-group');
+    if (formGroup) {
+      formGroup.parentNode.insertBefore(suggestionHeader, formGroup);
+    }
+  }
+  suggestionHeader.style.display = 'block';
+  
+  // Show the comment textarea with the suggestion
+  if (commentEl) {
+    commentEl.value = suggestion;
+    commentEl.style.display = 'block';
+  }
+  
+  // Create or update original comment reference
+  let originalReference = document.getElementById('originalReference');
+  if (!originalReference) {
+    originalReference = document.createElement('p');
+    originalReference.id = 'originalReference';
+    originalReference.style.fontSize = 'var(--font-size-xs)';
+    originalReference.style.color = 'var(--color-text-muted)';
+    originalReference.style.margin = '8px 0 0 0';
+    originalReference.style.fontStyle = 'italic';
+    
+    // Insert after the form group
+    const formGroup = document.querySelector('.form-group');
+    if (formGroup) {
+      formGroup.parentNode.insertBefore(originalReference, formGroup.nextSibling);
+    }
+  }
+  originalReference.innerHTML = `Original post: "${escapeHtml(originalComment)}"`;
+  originalReference.style.display = 'block';
+  
+  // Replace the submit button with suggestion actions
+  if (submitBtn) {
+    submitBtn.style.display = 'none';
+  }
+  
+  // Create suggestion actions if they don't exist
+  let suggestionActions = document.getElementById('suggestionActions');
+  if (!suggestionActions) {
+    suggestionActions = document.createElement('div');
+    suggestionActions.id = 'suggestionActions';
+    suggestionActions.className = 'button-group';
+    suggestionActions.innerHTML = `
+      <button type="button" class="btn_suggestion" onclick="regenerateSuggestion()">🔄 Regenerate</button>
+      <button type="button" class="btn_suggestion btn_submit" onclick="submitSuggestion()">✅ Submit</button>
+      <button type="button" class="btn_suggestion" onclick="cancelSuggestion()">❌ Cancel</button>
+    `;
+    
+    // Insert after the original reference
+    if (originalReference) {
+      originalReference.parentNode.insertBefore(suggestionActions, originalReference.nextSibling);
+    }
+  }
+  
+  suggestionActions.style.display = 'flex';
 }
 
 /**
@@ -303,6 +399,22 @@ function resetCommentForm() {
     submitBtn.innerHTML = 'Submit Comment';
   }
   
+  // Hide suggestion-specific elements
+  const suggestionActions = document.getElementById('suggestionActions');
+  if (suggestionActions) {
+    suggestionActions.style.display = 'none';
+  }
+  
+  const suggestionHeader = document.getElementById('suggestionHeader');
+  if (suggestionHeader) {
+    suggestionHeader.style.display = 'none';
+  }
+  
+  const originalReference = document.getElementById('originalReference');
+  if (originalReference) {
+    originalReference.style.display = 'none';
+  }
+  
   updateSubmitButton();
 }
 
@@ -311,6 +423,9 @@ function resetCommentForm() {
  */
 export function cancelSuggestion() {
   console.log('❌ User cancelled suggestion editing');
+  
+  // Clear the stored original comment
+  originalProblematicComment = null;
   
   // Clear status and show empty form
   clearStatus();
