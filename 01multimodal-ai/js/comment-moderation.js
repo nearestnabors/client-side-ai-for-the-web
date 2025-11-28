@@ -4,7 +4,7 @@
  */
 
 import { addComment } from '/common/js/storage.js';
-import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement } from '/common/js/ui-helpers.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification } from '/common/js/ui-helpers.js';
 
 /**
  * Handles comment form submission
@@ -23,19 +23,15 @@ export async function handleCommentSubmit(e) {
     return;
   }
   
-  const submitBtn = getElement('btnSubmit');
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = 'Checking... <span class="loading"></span>';
-  
-  showStatus({ type: 'checking', message: '🔍 Analyzing your comment for tone and constructiveness...' });
+  // Hide textarea and replace button with processing message
+  hideCommentForm();
+  showProcessingMessage();
   
   try {
     const analysis = await analyzeComment(comment);
     
     if (analysis.isProblematic) {
-      // Block problematic comments and show suggestions
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = 'Submit Comment';
+      // Keep form hidden and show suggestion editing interface
       showStatus({
         type: 'blocked',
         message: `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>`,
@@ -45,26 +41,15 @@ export async function handleCommentSubmit(e) {
       // Accept good comments and post them
       addComment(comment);
       
-      // Clear form and show success
-      const commentInput = getElement('comment');
-      commentInput.value = '';
-      showStatus({ type: 'allowed', message: '✅ Comment posted! It looks constructive and respectful.' });
-      
-      // Reset button state
-      submitBtn.innerHTML = 'Submit Comment';
-      updateSubmitButton();
-      
-      // Clear status message after a moment
-      setTimeout(() => {
-        const statusEl = getElement('status');
-        statusEl.className = 'status';
-      }, 3000);
+      // Show success notification and reset form
+      showSuccessNotification('💬 Comment posted successfully!');
+      resetCommentForm();
     }
   } catch (error) {
     const errorMsg = handleError(error, 'Comment analysis');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = 'Submit Comment';
     showStatus({ type: 'error', message: errorMsg });
+    // Show form again on error
+    showCommentForm();
   }
 }
 
@@ -198,8 +183,9 @@ function showStatus(config) {
       <div class="suggestion-content">
         <textarea class="suggestion-editor" id="suggestionEditor">${escapeHtml(suggestion)}</textarea>
         <div class="suggestion-actions">
-          <button class="suggestion-btn regenerate-btn" onclick="regenerateSuggestion()">🔄 Regenerate</button>
-          <button class="suggestion-btn submit-btn" onclick="submitSuggestion()">✅ Submit</button>
+          <button class="btn_suggestion" onclick="regenerateSuggestion()">🔄 Regenerate</button>
+          <button class="btn_suggestion btn_submit" onclick="submitSuggestion()">✅ Submit</button>
+          <button class="btn_suggestion" onclick="cancelSuggestion()">❌ Cancel</button>
         </div>
       </div>
     `;
@@ -242,7 +228,6 @@ export function regenerateSuggestion() {
  */
 export function submitSuggestion() {
   const suggestionEditor = getElement('suggestionEditor');
-  const commentInput = getElement('comment');
   
   const suggestedText = suggestionEditor.value.trim();
   
@@ -251,18 +236,10 @@ export function submitSuggestion() {
   // Use the suggested text and post the comment
   addComment(suggestedText);
   
-  // Clear form and status
-  commentInput.value = '';
+  // Show success notification and reset form
+  showSuccessNotification('💬 Comment posted successfully!');
   clearStatus();
-  
-  // Show success message
-  showStatus({ type: 'allowed', message: '✅ Comment posted! Thank you for using the suggested text.' });
-  
-  // Update submit button state
-  updateSubmitButton();
-  
-  // Clear success message after a moment
-  setTimeout(clearStatus, 4000);
+  resetCommentForm();
 }
 
 /**
@@ -274,7 +251,74 @@ function clearStatus() {
   statusEl.innerHTML = '';
 }
 
+/**
+ * Hides the comment form during processing/suggestion editing
+ */
+function hideCommentForm() {
+  const commentEl = getElement('comment');
+  const submitBtn = getElement('btnSubmit');
+  
+  if (commentEl) commentEl.style.display = 'none';
+  if (submitBtn) submitBtn.style.display = 'none';
+}
+
+/**
+ * Shows the comment form
+ */
+function showCommentForm() {
+  const commentEl = getElement('comment');
+  const submitBtn = getElement('btnSubmit');
+  
+  if (commentEl) commentEl.style.display = 'block';
+  if (submitBtn) {
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Submit Comment';
+  }
+  
+  updateSubmitButton();
+}
+
+/**
+ * Shows processing message during AI analysis
+ */
+function showProcessingMessage() {
+  showStatus({ type: 'checking', message: '🔍 Analyzing your comment for tone and constructiveness...' });
+}
+
+/**
+ * Resets the comment form to empty state
+ */
+function resetCommentForm() {
+  const commentEl = getElement('comment');
+  if (commentEl) {
+    commentEl.value = '';
+    commentEl.style.display = 'block';
+  }
+  
+  const submitBtn = getElement('btnSubmit');
+  if (submitBtn) {
+    submitBtn.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Submit Comment';
+  }
+  
+  updateSubmitButton();
+}
+
+/**
+ * Cancels suggestion editing and returns to empty comment form
+ */
+export function cancelSuggestion() {
+  console.log('❌ User cancelled suggestion editing');
+  
+  // Clear status and show empty form
+  clearStatus();
+  resetCommentForm();
+}
+
 // Make functions globally available for onclick handlers
 window.regenerateSuggestion = regenerateSuggestion;
 window.submitSuggestion = submitSuggestion;
+window.cancelSuggestion = cancelSuggestion;
 window.handleCommentSubmit = handleCommentSubmit;
