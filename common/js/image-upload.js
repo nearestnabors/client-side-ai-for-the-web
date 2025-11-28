@@ -350,3 +350,11 @@ export function getCurrentImageData() {
   return currentImageData;
 }
 
+/**
+ * Gets the current alt text
+ * @returns {string|null} - The current alt text or null if no alt text is available
+ */
+export function getCurrentAltText() {
+  return currentAltText;
+}
+

@@ -5,6 +5,7 @@
 
 import { addComment } from '/common/js/storage.js';
 import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, parseGeminiResponse, hideElement, showElement } from '/common/js/ui-helpers.js';
+import { getCurrentAltText } from '/common/js/image-upload.js';
 import { getApiKey } from '/common/js/api-key.js';
 
 // Store the original problematic comment for regeneration
@@ -32,7 +33,9 @@ export async function handleCommentSubmit(e) {
   showProcessingMessage();
   
   try {
-    const analysis = await analyzeComment(comment);
+    // Get current image context if available
+    const imageDescription = getCurrentAltText();
+    const analysis = await analyzeComment(comment, imageDescription);
     
     if (analysis.isProblematic) {
       // Show blocked status and setup suggestion editing in the comment form
@@ -61,9 +64,10 @@ export async function handleCommentSubmit(e) {
 /**
  * Sends a comment to AI for toxicity and tone analysis
  * @param {string} comment - The comment text to analyze
+ * @param {string} imageDescription - Optional description of the image being commented on
  * @returns {Object} Analysis result with isProblematic, reason, and suggestion
  */
-async function analyzeComment(comment) {
+async function analyzeComment(comment, imageDescription = null) {
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getApiKey()}`, {
     method: 'POST',
     headers: {
@@ -83,7 +87,7 @@ async function analyzeComment(comment) {
 
 Even simple negative statements should be flagged if they don't provide constructive feedback or seem designed to be discouraging.
 
-Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about appearance of photos, not about philosphical disagreements. The suggestion should be written as though by the author of the original comment."}
+${imageDescription ? `Context: This comment is about an image described as: "${imageDescription}"\n\n` : ''}Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about appearance of photos, not about philosphical disagreements. The suggestion should be written as though by the author of the original comment."}
 
 Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
         }]
@@ -217,7 +221,8 @@ export function regenerateSuggestion() {
   showStatus({ type: 'checking', message: '🔄 Generating a new suggestion...' });
   
   // Generate a new suggestion for the original problematic comment
-  analyzeComment(originalComment)
+  const imageDescription = getCurrentAltText();
+  analyzeComment(originalComment, imageDescription)
     .then(analysis => {
       if (analysis.isProblematic && analysis.suggestion) {
         showStatus({ type: 'blocked', message: `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>` });
