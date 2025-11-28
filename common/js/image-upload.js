@@ -1,14 +1,28 @@
 /**
  * Image Upload and Analysis
  * Handles file uploads, drag-and-drop, and AI-powered alt-text generation
+ * Uses dependency injection for AI alt-text generation
  */
 
-import { escapeHtml, handleError, createApiError, getElement } from '/common/js/ui-helpers.js';
-import { savePostedImage } from '/common/js/storage.js';
+import { escapeHtml, handleError, getElement } from './ui-helpers.js';
+import { savePostedImage } from './storage.js';
 
 let currentImageData = null;
 let currentAltText = null;
 let currentAnalysisController = null;
+let aiGenerator = null;
+
+/**
+ * Configures the AI alt-text generator
+ * @param {Function} generator - AI generator function that takes (imageData, controller) and returns Promise<string>
+ */
+export function setAIGenerator(generator) {
+  if (typeof generator !== 'function') {
+    throw new Error('AI generator must be a function');
+  }
+  aiGenerator = generator;
+  console.log('🤖 AI alt-text generator configured');
+}
 
 /**
  * Handles file selection from the file input
@@ -70,13 +84,13 @@ function displayImagePreview(dataUrl, fileName) {
 }
 
 /**
- * Sends the image to Google's Gemini AI for alt-text generation
- * Uses the configured API key to make the request
+ * Generates alt-text for an image using the configured AI provider
  * @param {string} imageData - Base64 data URL of the image
  */
 export async function generateAltText(imageData) {
-  if (!window.geminiApiKey) {
-    updateAltTextResult('❌ Please configure your Google AI API key first');
+  // Check if AI generator is configured via dependency injection
+  if (!aiGenerator) {
+    updateAltTextResult('❌ No AI alt-text generator configured. Call setAIGenerator() first.');
     return;
   }
   
@@ -94,7 +108,7 @@ export async function generateAltText(imageData) {
   
   altTextResult.innerHTML = `
     <div>
-      🤖 Analyzing image with Gemini AI... <span class="loading"></span>
+      🤖 Analyzing image with AI... <span class="loading"></span>
     </div>
   `;
   altTextResult.style.display = 'block';
@@ -104,117 +118,14 @@ export async function generateAltText(imageData) {
   }
   
   try {
-    // Extract image data and detect MIME type
-    const [mimeInfo, base64Data] = imageData.split(',');
-    const mimeType = mimeInfo.match(/data:([^;]+)/)[1];
-    
-    console.log('Sending request to Gemini API...');
-    
-    // Make API request to Gemini
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.geminiApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: currentAnalysisController.signal,
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              text: "Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting."
-            },
-            {
-              inline_data: {
-                mime_type: mimeType,
-                data: base64Data
-              }
-            }
-          ]
-        }],
-        generationConfig: {
-          maxOutputTokens: 2000,
-          temperature: 0.4
-        }
-      })
-    });
-    
-    console.log('Response status:', response.status);
-    
-    // Handle API errors
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error Response:', errorText);
-      let errorMsg;
-      try {
-        const error = JSON.parse(errorText);
-        errorMsg = error.error?.message || createApiError(response, 'Image analysis API');
-      } catch {
-        errorMsg = createApiError(response, 'Image analysis API');
-      }
-      throw new Error(errorMsg);
-    }
-    
-    // Parse the response
-    const data = await response.json();
-    console.log('API Response:', data);
-    
-    // Extract alt text from various possible response structures
-    let altText = null;
-    const candidate = data.candidates?.[0];
-    
-    if (candidate) {
-      console.log('Full candidate object:', JSON.stringify(candidate, null, 2));
-      
-      // Check if response was truncated
-      if (candidate.finishReason === 'MAX_TOKENS') {
-        console.warn('Response was truncated due to MAX_TOKENS - attempting to extract partial text');
-      }
-      
-      // Try multiple possible response structures
-      if (candidate.content?.parts && Array.isArray(candidate.content.parts)) {
-        // Look through all parts for text
-        for (const part of candidate.content.parts) {
-          if (part.text) {
-            altText = part.text.trim();
-            break;
-          }
-        }
-      }
-      
-      // Fallback to other possible structures
-      if (!altText) {
-        if (candidate.content?.text) {
-          altText = candidate.content.text.trim();
-        } else if (candidate.text) {
-          altText = candidate.text.trim();
-        } else if (candidate.output) {
-          altText = candidate.output.trim();
-        }
-      }
-    }
-    
-    console.log('Extracted alt text:', altText);
+    // Call the injected AI generator
+    const altText = await aiGenerator(imageData, currentAnalysisController);
     
     if (altText) {
       currentAltText = altText;
-      // If truncated, append a note
-      if (candidate?.finishReason === 'MAX_TOKENS') {
-        updateAltTextResult(altText + ' (response truncated)');
-      } else {
-        updateAltTextResult(altText);
-      }
+      updateAltTextResult(altText);
     } else {
-      console.error('No alt text found in response:', data);
-      console.error('Response structure:', JSON.stringify(data, null, 2));
-      
-      // Provide more helpful error message
-      if (candidate?.finishReason === 'MAX_TOKENS') {
-        throw new Error('Response was truncated and no text was generated. Try with a smaller image or increase maxOutputTokens.');
-      } else if (candidate?.finishReason) {
-        throw new Error(`API response finished with reason: ${candidate.finishReason}`);
-      } else {
-        throw new Error('No alt text generated - unexpected response structure');
-      }
+      throw new Error('No alt text generated');
     }
   } catch (error) {
     if (error.name === 'AbortError') {

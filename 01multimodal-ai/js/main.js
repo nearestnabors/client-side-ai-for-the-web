@@ -6,8 +6,9 @@
 import { loadApiKey, setupApiKeyEventListeners } from '/common/js/api-key.js';
 import { loadPostedImages, clearPostedImages, loadComments } from '/common/js/storage.js';
 import { setupEventListeners, updateUIState } from '/common/js/ui-helpers.js';
+import { setAIGenerator } from '/common/js/image-upload.js';
+import { generateGeminiAltText } from './generate-alt-text.js';
 // Import other modules to ensure they load and register their global functions
-import './image-upload.js';
 import './comment-moderation.js';
 
 /**
@@ -16,6 +17,9 @@ import './comment-moderation.js';
  */
 window.addEventListener('load', () => {
   console.log('🚀 Starting app initialization...');
+  
+  // Configure AI generator via dependency injection
+  setAIGenerator(generateGeminiAltText);
   
   // Load saved API key from storage
   loadApiKey();
