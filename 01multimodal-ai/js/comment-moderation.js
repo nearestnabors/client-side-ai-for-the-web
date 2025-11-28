@@ -4,7 +4,7 @@
  */
 
 import { addComment } from '/common/js/storage.js';
-import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification } from '/common/js/ui-helpers.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, parseGeminiResponse } from '/common/js/ui-helpers.js';
 
 // Store the original problematic comment for regeneration
 let originalProblematicComment = null;
@@ -76,7 +76,7 @@ async function analyzeComment(comment) {
 {
   "isProblematic": boolean,
   "reason": "Brief explanation if problematic",
-  "suggestion": "A constructive alternative if problematic"
+  "suggestion": "Rephrase the comment to be more constructive and respectful but capture the poster's original intent."
 }
 
 Consider these factors when analyzing:
@@ -105,49 +105,7 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
   }
   
   const data = await response.json();
-  
-  // Extract response text from various possible structures
-  let responseText = null;
-  const candidate = data.candidates?.[0];
-  
-  if (candidate) {
-    // Check for text in parts array
-    if (candidate.content?.parts && Array.isArray(candidate.content.parts)) {
-      for (const part of candidate.content.parts) {
-        if (part.text) {
-          responseText = part.text;
-          break;
-        }
-      }
-    }
-    
-    // Fallback to other possible structures
-    if (!responseText) {
-      if (candidate.content?.text) {
-        responseText = candidate.content.text;
-      } else if (candidate.text) {
-        responseText = candidate.text;
-      }
-    }
-    
-    // Log if response was truncated
-    if (candidate.finishReason === 'MAX_TOKENS') {
-      console.warn('Comment analysis response was truncated due to MAX_TOKENS');
-    }
-  }
-  
-  if (!responseText) {
-    console.error('No response text found in API response:', data);
-    
-    // Provide helpful error message based on finish reason
-    if (candidate?.finishReason === 'MAX_TOKENS') {
-      throw new Error('API response was truncated due to token limit. The comment may be too complex to analyze. Please try a shorter comment.');
-    } else if (candidate?.finishReason) {
-      throw new Error(`API response finished with reason: ${candidate.finishReason}. Unable to analyze comment.`);
-    } else {
-      throw new Error('No response text found in API response. The API may be experiencing issues.');
-    }
-  }
+  const responseText = parseGeminiResponse(data, 'Comment analysis');
   
   // Extract JSON from the response
   try {

@@ -3,7 +3,7 @@
  * Server-based alt-text generation using Google's Gemini AI API
  */
 
-import { handleError, createApiError } from '/common/js/ui-helpers.js';
+import { handleError, createApiError, parseGeminiResponse } from '/common/js/ui-helpers.js';
 
 /**
  * Sends the image to Google's Gemini AI for alt-text generation
@@ -71,63 +71,10 @@ export async function generateGeminiAltText(imageData, controller) {
   const data = await response.json();
   console.log('API Response:', data);
   
-  // Extract alt text from various possible response structures
-  let altText = null;
-  const candidate = data.candidates?.[0];
-  
-  if (candidate) {
-    console.log('Full candidate object:', JSON.stringify(candidate, null, 2));
-    
-    // Check if response was truncated
-    if (candidate.finishReason === 'MAX_TOKENS') {
-      console.warn('Response was truncated due to MAX_TOKENS - attempting to extract partial text');
-    }
-    
-    // Try multiple possible response structures
-    if (candidate.content?.parts && Array.isArray(candidate.content.parts)) {
-      // Look through all parts for text
-      for (const part of candidate.content.parts) {
-        if (part.text) {
-          altText = part.text.trim();
-          break;
-        }
-      }
-    }
-    
-    // Fallback to other possible structures
-    if (!altText) {
-      if (candidate.content?.text) {
-        altText = candidate.content.text.trim();
-      } else if (candidate.text) {
-        altText = candidate.text.trim();
-      } else if (candidate.output) {
-        altText = candidate.output.trim();
-      }
-    }
-  }
-  
+  const altText = parseGeminiResponse(data, 'Image analysis').trim();
   console.log('Extracted alt text:', altText);
   
-  if (altText) {
-    // If truncated, append a note
-    if (candidate?.finishReason === 'MAX_TOKENS') {
-      return altText + ' (response truncated)';
-    } else {
-      return altText;
-    }
-  } else {
-    console.error('No alt text found in response:', data);
-    console.error('Response structure:', JSON.stringify(data, null, 2));
-    
-    // Provide more helpful error message
-    if (candidate?.finishReason === 'MAX_TOKENS') {
-      throw new Error('Response was truncated and no text was generated. Try with a smaller image or increase maxOutputTokens.');
-    } else if (candidate?.finishReason) {
-      throw new Error(`API response finished with reason: ${candidate.finishReason}`);
-    } else {
-      throw new Error('No alt text generated - unexpected response structure');
-    }
-  }
+  return altText;
 }
 
 console.log('🤖 Gemini AI alt-text generator module loaded');

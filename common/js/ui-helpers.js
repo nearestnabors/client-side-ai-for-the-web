@@ -127,6 +127,60 @@ export function createApiError(response, context) {
 }
 
 /**
+ * Parses Gemini API response structure consistently
+ * @param {Object} data - The API response data
+ * @param {string} context - Context of the API call for error reporting
+ * @returns {string} - Extracted response text
+ * @throws {Error} - If response cannot be parsed
+ */
+export function parseGeminiResponse(data, context = 'API call') {
+  // Extract response text from various possible structures
+  let responseText = null;
+  const candidate = data.candidates?.[0];
+  
+  if (candidate) {
+    // Check for text in parts array
+    if (candidate.content?.parts && Array.isArray(candidate.content.parts)) {
+      for (const part of candidate.content.parts) {
+        if (part.text) {
+          responseText = part.text;
+          break;
+        }
+      }
+    }
+    
+    // Fallback to other possible structures
+    if (!responseText) {
+      if (candidate.content?.text) {
+        responseText = candidate.content.text;
+      } else if (candidate.text) {
+        responseText = candidate.text;
+      }
+    }
+    
+    // Log if response was truncated
+    if (candidate.finishReason === 'MAX_TOKENS') {
+      console.warn(`${context} response was truncated due to MAX_TOKENS`);
+    }
+  }
+  
+  if (!responseText) {
+    console.error(`No response text found in ${context} response:`, data);
+    
+    // Provide helpful error message based on finish reason
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      throw new Error(`${context} response was truncated due to token limit. The request may be too complex. Please try a shorter input.`);
+    } else if (candidate?.finishReason) {
+      throw new Error(`${context} response finished with reason: ${candidate.finishReason}. Unable to process request.`);
+    } else {
+      throw new Error(`No response text found in ${context} response. The API may be experiencing issues.`);
+    }
+  }
+  
+  return responseText;
+}
+
+/**
  * Sets up all event listeners for the application
  */
 export function setupEventListeners() {

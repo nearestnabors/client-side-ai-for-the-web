@@ -199,7 +199,7 @@ button {
 
 button:hover,
 button:focus {
-  color: #fff;
+  color: var(--color-text-primary);
   border-color: var(--color-accent);
 }
 
@@ -221,7 +221,7 @@ button:disabled {
 .btn_accept,
 .btn_save {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 /* Large button variant for main actions */
@@ -353,21 +353,8 @@ button:disabled {
   margin-top: 8px;
 }
 
-.comment-author {
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
 .comment-date {
   color: var(--sage-600);
-}
-
-
-.no-comments {
-  text-align: center;
-  color: #999;
-  font-style: italic;
-  padding: 40px 20px;
 }
 
 
@@ -414,7 +401,7 @@ button:disabled {
 
 .upload-area.dragover {
   border-color: var(--color-primary);
-  background: #f0f8ff;
+  background: var(--color-primary-light);
   transform: scale(1.02);
 }
 
@@ -499,7 +486,7 @@ button:disabled {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid #f3f3f3;
+  border: 2px solid var(--color-border);
   border-top: 2px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -635,30 +622,6 @@ button:disabled {
   transform: translateX(100%);
 }
 
-.suggestion-header h3 {
-  margin: 0 0 12px 0;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-}
-
-.suggestion-content {
-  background: #fff8e1;
-  padding: 12px;
-  border: 1px solid #ffcc02;
-}
-
-.suggestion-editor {
-  min-height: 80px;
-  padding: 10px;
-  border-color: #ffcc02;
-  margin-bottom: 12px;
-  background: white;
-}
-
-.suggestion-editor:focus {
-  border-color: var(--color-warning);
-  box-shadow: 0 0 0 2px var(--color-warning-bg);
-}
 
 .suggestion-actions {
   display: flex;
