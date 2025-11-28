@@ -575,17 +575,19 @@ button:disabled {
   justify-content: flex-end;
 }
 
-.posted-image-item img {
+/* Posted image section styles */
+.posted-image {
   width: 100%;
   height: auto;
-  margin-bottom: 12px;
   display: block;
+  border-radius: var(--radius-non-interactive);
+  margin-bottom: 12px;
 }
 
-
 .posted-image-meta {
-  font-size: 12px;
-  color: #999;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 /* Comment section improvements */

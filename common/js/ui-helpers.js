@@ -9,7 +9,7 @@ import { getApiKey } from './api-key.js';
 const domCache = new Map();
 
 // Import functions for event listeners (circular dependency is handled by ES6 modules)
-let handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, getCurrentAltText, handleCommentSubmit;
+let handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit;
 
 // Lazy load these to avoid circular dependency issues at module initialization
 async function loadEventHandlers() {
@@ -21,12 +21,11 @@ async function loadEventHandlers() {
     acceptAndPostImage = imageUpload.acceptAndPostImage;
     cancelImageSelection = imageUpload.cancelImageSelection;
     getCurrentImageData = imageUpload.getCurrentImageData;
-    getCurrentAltText = imageUpload.getCurrentAltText;
     
     const commentModeration = await import('../../01multimodal-ai/js/comment-moderation.js');
     handleCommentSubmit = commentModeration.handleCommentSubmit;
   }
-  return { handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, getCurrentAltText, handleCommentSubmit };
+  return { handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit };
 }
 
 /**
@@ -251,10 +250,10 @@ export function parseGeminiResponse(data, context = 'API call') {
 export async function setupEventListeners() {
   // Load event handlers (handles circular dependencies)
   const handlers = await loadEventHandlers();
-  setupEventListenersInternal(handlers.handleFileSelect, handlers.handleFile, handlers.generateAltText, handlers.acceptAndPostImage, handlers.cancelImageSelection, handlers.getCurrentImageData, handlers.getCurrentAltText, handlers.handleCommentSubmit);
+  setupEventListenersInternal(handlers.handleFileSelect, handlers.handleFile, handlers.generateAltText, handlers.acceptAndPostImage, handlers.cancelImageSelection, handlers.getCurrentImageData, handlers.handleCommentSubmit);
 }
 
-function setupEventListenersInternal(handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, getCurrentAltText, handleCommentSubmit) {
+function setupEventListenersInternal(handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit) {
   // Image upload functionality
   const uploadArea = getElement('uploadArea');
   const fileInput = getElement('fileInput');

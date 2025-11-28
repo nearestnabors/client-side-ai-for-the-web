@@ -4,7 +4,6 @@
  */
 
 import { loadApiKey, setupApiKeyEventListeners } from '/common/js/api-key.js';
-import { clearPostedImages, loadComments } from '/common/js/storage.js';
 import { setupEventListeners, updateUIState } from '/common/js/ui-helpers.js';
 import { setAIGenerator } from '/common/js/image-upload.js';
 import { generateGeminiAltText } from './generate-alt-text.js';
@@ -25,9 +24,6 @@ window.addEventListener('load', () => {
   
   // Load saved API key from storage
   loadApiKey();
-  
-  // Load any saved comments
-  loadComments();
   
   // Set up API key event listeners first (these don't depend on other modules)
   setupApiKeyEventListeners();
@@ -50,9 +46,4 @@ window.addEventListener('load', () => {
   }, FADE_IN_DELAY_MS);
 });
 
-// Clear storage on page refresh as per requirements
-window.addEventListener('beforeunload', () => {
-  // Clear posted images and comments when user navigates away or refreshes
-  clearPostedImages();
-  localStorage.removeItem('comments');
-});
+// No cleanup needed - everything is in memory and will be cleared on page refresh

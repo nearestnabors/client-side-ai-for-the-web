@@ -5,7 +5,6 @@
 
 import { addComment } from '/common/js/storage.js';
 import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, parseGeminiResponse, hideElement, showElement } from '/common/js/ui-helpers.js';
-import { getCurrentAltText } from '/common/js/image-upload.js';
 import { getApiKey } from '/common/js/api-key.js';
 
 // Store the original problematic comment for regeneration
@@ -33,8 +32,10 @@ export async function handleCommentSubmit(e) {
   showProcessingMessage();
   
   try {
-    // Get current image context if available
-    const imageDescription = getCurrentAltText();
+    // Get current image context from the posted image in the DOM
+    const postedImg = document.getElementById('postedImage');
+    const imageDescription = postedImg ? postedImg.alt : null;
+    console.log('🖼️ Current alt text from DOM:', imageDescription);
     const analysis = await analyzeComment(comment, imageDescription);
     
     if (analysis.isProblematic) {
@@ -68,15 +69,7 @@ export async function handleCommentSubmit(e) {
  * @returns {Object} Analysis result with isProblematic, reason, and suggestion
  */
 async function analyzeComment(comment, imageDescription = null) {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getApiKey()}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{
-          text: `You are a comment moderator for a constructive discussion platform. Analyze this comment and flag it as problematic if it contains:
+  const prompt = `You are a comment moderator for a constructive discussion platform. Analyze this comment and flag it as problematic if it contains:
 
 - Personal attacks, insults, or harassment
 - Hate speech or discriminatory language  
@@ -87,9 +80,22 @@ async function analyzeComment(comment, imageDescription = null) {
 
 Even simple negative statements should be flagged if they don't provide constructive feedback or seem designed to be discouraging.
 
-${imageDescription ? `Context: This comment is about an image described as: "${imageDescription}"\n\n` : ''}Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about appearance of photos, not about philosphical disagreements. The suggestion should be written as though by the author of the original comment."}
+${imageDescription ? `Context: This comment is about an image described as: "${imageDescription}"\n\n` : ''}Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about appearance of photos, not about philosphical disagreements. The suggestion should be written as though by the author of the original comment, matching their tone and style but changing the content to be more respectful and constructive."}
 
-Comment to analyze: "${comment.replace(/"/g, '\\"')}"`
+Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
+
+  // Log the prompt for debugging
+  console.log('🔍 Comment Moderation Prompt:', prompt);
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getApiKey()}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: prompt
         }]
       }],
       generationConfig: {
@@ -221,7 +227,8 @@ export function regenerateSuggestion() {
   showStatus({ type: 'checking', message: '🔄 Generating a new suggestion...' });
   
   // Generate a new suggestion for the original problematic comment
-  const imageDescription = getCurrentAltText();
+  const postedImg = document.getElementById('postedImage');
+  const imageDescription = postedImg ? postedImg.alt : null;
   analyzeComment(originalComment, imageDescription)
     .then(analysis => {
       if (analysis.isProblematic && analysis.suggestion) {

@@ -5,7 +5,7 @@
  */
 
 import { escapeHtml, handleError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement } from './ui-helpers.js';
-import { savePostedImage } from './storage.js';
+// No storage import needed
 
 // Constants
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -244,8 +244,7 @@ export function acceptAndPostImage() {
     timestamp: new Date().toISOString()
   };
   
-  // Save to posted images
-  savePostedImage(postedImage);
+  // Image data stays in memory (no persistence needed)
   
   // Display in feed
   displayPostedImage(postedImage);
@@ -261,25 +260,26 @@ export function acceptAndPostImage() {
 }
 
 /**
- * Displays a posted image in the feed
+ * Displays the posted image in the single image display area
  * @param {Object} imageData - The posted image data
  */
 export function displayPostedImage(imageData) {
-  const postedImages = getElement('postedImages');
-  const imagesFeed = getElement('imagesFeed');
+  const postedImageSection = getElement('postedImageSection');
+  const postedImage = getElement('postedImage');
+  const postedImageMeta = getElement('postedImageMeta');
   
-  if (!postedImages || !imagesFeed) {
+  if (!postedImageSection || !postedImage || !postedImageMeta) {
     return;
   }
   
-  // Show the posted images section
-  showElement(postedImages);
+  // Show the posted image section
+  showElement(postedImageSection);
   
-  // Create image item using DOM methods for security
-  const imageItem = document.createElement('div');
-  imageItem.className = 'posted-image-item';
-  imageItem.dataset.imageId = imageData.id;
+  // Set the image source and alt text
+  postedImage.src = imageData.imageData;
+  postedImage.alt = imageData.altText;
   
+  // Format timestamp
   const timestamp = new Date(imageData.timestamp).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -287,25 +287,8 @@ export function displayPostedImage(imageData) {
     minute: '2-digit'
   });
   
-  // Create image element safely
-  const img = document.createElement('img');
-  img.src = imageData.imageData;
-  img.alt = imageData.altText; // Browser will handle escaping in alt attribute
-  
-  // Create meta container
-  const metaDiv = document.createElement('div');
-  metaDiv.className = 'posted-image-meta';
-  
-  const timestampSpan = document.createElement('span');
-  timestampSpan.textContent = `Posted ${timestamp}`;
-  metaDiv.appendChild(timestampSpan);
-  
-  // Assemble elements
-  imageItem.appendChild(img);
-  imageItem.appendChild(metaDiv);
-  
-  // Add to feed (newest first)
-  imagesFeed.insertBefore(imageItem, imagesFeed.firstChild);
+  // Set the metadata
+  postedImageMeta.textContent = `Posted ${timestamp}`;
 }
 
 /**
