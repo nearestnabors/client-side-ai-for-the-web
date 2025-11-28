@@ -4,6 +4,7 @@
  */
 
 import { handleError, createApiError, parseGeminiResponse } from '/common/js/ui-helpers.js';
+import { getApiKey } from '/common/js/api-key.js';
 
 /**
  * Sends the image to Google's Gemini AI for alt-text generation
@@ -13,7 +14,8 @@ import { handleError, createApiError, parseGeminiResponse } from '/common/js/ui-
  * @returns {Promise<string>} - Generated alt text
  */
 export async function generateGeminiAltText(imageData, controller) {
-  if (!window.geminiApiKey) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
     throw new Error('❌ Please configure your Google AI API key first');
   }
   
@@ -21,10 +23,10 @@ export async function generateGeminiAltText(imageData, controller) {
   const [mimeInfo, base64Data] = imageData.split(',');
   const mimeType = mimeInfo.match(/data:([^;]+)/)[1];
   
-  console.log('Sending request to Gemini API...');
+  // Sending request to Gemini AI for alt-text generation
   
   // Make API request to Gemini
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.geminiApiKey}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -51,8 +53,6 @@ export async function generateGeminiAltText(imageData, controller) {
     })
   });
   
-  console.log('Response status:', response.status);
-  
   // Handle API errors
   if (!response.ok) {
     const errorText = await response.text();
@@ -69,12 +69,11 @@ export async function generateGeminiAltText(imageData, controller) {
   
   // Parse the response
   const data = await response.json();
-  console.log('API Response:', data);
   
   const altText = parseGeminiResponse(data, 'Image analysis').trim();
-  console.log('Extracted alt text:', altText);
+  console.log('Generated alt text:', altText);
   
   return altText;
 }
 
-console.log('🤖 Gemini AI alt-text generator module loaded');
+// Gemini AI alt-text generator module loaded

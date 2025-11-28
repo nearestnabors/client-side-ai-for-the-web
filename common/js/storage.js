@@ -110,7 +110,6 @@ export function loadComments() {
  * @param {Object} imageData - The image data to save
  */
 export function savePostedImage(imageData) {
-  console.log('💾 Saving posted image to localStorage...');
   
   let postedImages = [];
   const saved = localStorage.getItem('postedImages');
@@ -118,7 +117,7 @@ export function savePostedImage(imageData) {
     try {
       postedImages = JSON.parse(saved);
     } catch (error) {
-      console.error('Error parsing posted images:', error);
+      // Error parsing posted images, start with empty array
       postedImages = [];
     }
   }
@@ -131,42 +130,6 @@ export function savePostedImage(imageData) {
   }
   
   localStorage.setItem('postedImages', JSON.stringify(postedImages));
-  console.log('✅ Posted image saved');
-}
-
-/**
- * Loads posted images from localStorage and displays them
- */
-export function loadPostedImages() {
-  console.log('📂 Loading posted images from localStorage...');
-  
-  const saved = localStorage.getItem('postedImages');
-  if (!saved) {
-    console.log('No posted images found - keeping upload section visible');
-    return;
-  }
-  
-  try {
-    const postedImages = JSON.parse(saved);
-    
-    if (postedImages.length > 0) {
-      console.log(`✅ Found ${postedImages.length} posted images`);
-      
-      postedImages.forEach(imageData => {
-        window.displayPostedImage(imageData);
-      });
-      
-      // Hide upload section since we have posted images
-      const uploadSection = getElement('uploadSection');
-      hideElement(uploadSection);
-      console.log('📦 Upload section hidden - images already posted');
-      
-      // Show comment section if images exist
-      window.showCommentSection();
-    }
-  } catch (error) {
-    console.error('Error loading posted images:', error);
-  }
 }
 
 /**
@@ -176,12 +139,6 @@ export function loadPostedImages() {
  * when DOM elements are unavailable.
  */
 export function clearPostedImages() {
-  console.log('🧹 Clearing all posted images from localStorage...');
+  // Clear all posted images from localStorage on page refresh
   localStorage.removeItem('postedImages');
-  console.log('✅ Posted images cleared from storage');
 }
-
-// Make functions globally available for cross-module compatibility
-window.savePostedImage = savePostedImage;
-window.loadPostedImages = loadPostedImages;
-window.clearPostedImages = clearPostedImages;

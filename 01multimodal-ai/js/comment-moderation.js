@@ -5,6 +5,7 @@
 
 import { addComment } from '/common/js/storage.js';
 import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, parseGeminiResponse, hideElement, showElement } from '/common/js/ui-helpers.js';
+import { getApiKey } from '/common/js/api-key.js';
 
 // Store the original problematic comment for regeneration
 let originalProblematicComment = null;
@@ -21,7 +22,7 @@ export async function handleCommentSubmit(e) {
   const comment = commentEl.value.trim();
   if (!comment) return;
   
-  if (!window.geminiApiKey) {
+  if (!getApiKey()) {
     showStatus({ type: 'error', message: '❌ Please configure your Google AI API key first' });
     return;
   }
@@ -63,7 +64,7 @@ export async function handleCommentSubmit(e) {
  * @returns {Object} Analysis result with isProblematic, reason, and suggestion
  */
 async function analyzeComment(comment) {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.geminiApiKey}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getApiKey()}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ function showStatus(config) {
  * Regenerates a new suggestion for the blocked comment
  */
 export function regenerateSuggestion() {
-  console.log('🔄 Regenerating comment suggestion');
+  // Regenerating comment suggestion for blocked comment
   
   // Get the original problematic comment from storage
   const originalComment = originalProblematicComment;
@@ -146,6 +147,9 @@ export function regenerateSuggestion() {
     return;
   }
   
+  // Hide comment form during regeneration
+  hideCommentForm();
+  
   // Show regenerating status
   showStatus({ type: 'checking', message: '🔄 Generating a new suggestion...' });
   
@@ -154,20 +158,20 @@ export function regenerateSuggestion() {
     .then(analysis => {
       if (analysis.isProblematic && analysis.suggestion) {
         showStatus({ type: 'blocked', message: `<h3>⚠️ Consider Revising</h3><p>${analysis.reason}</p>` });
-        // Update the textarea with the new suggestion (without recreating the whole interface)
-        const commentEl = getElement('comment');
-        if (commentEl) {
-          commentEl.value = analysis.suggestion;
-        }
+        // Show the suggestion form with the new suggestion
+        showSuggestionForm(analysis.suggestion, originalComment);
       } else {
         // This shouldn't happen since we're re-analyzing the original problematic comment
-        // But if it does, show an error
+        // But if it does, show an error and restore the form
         showStatus({ type: 'error', message: 'Unable to generate a new suggestion. Please try again.' });
+        showCommentForm();
       }
     })
     .catch(error => {
       const errorMsg = handleError(error, 'Suggestion regeneration');
       showStatus({ type: 'error', message: errorMsg });
+      // Show form again on error
+      showCommentForm();
     });
 }
 
@@ -179,7 +183,7 @@ export function submitSuggestion() {
   
   const suggestedText = commentEl.value.trim();
   
-  console.log('✅ Submitting AI-suggested comment');
+  // Submitting AI-suggested comment
   
   // Use the suggested text and post the comment
   addComment(suggestedText);
@@ -243,21 +247,11 @@ function showSuggestionForm(suggestion, originalComment = null) {
   // Store original comment for regeneration
   originalProblematicComment = originalComment;
   
-  // Create suggestion header if it doesn't exist
-  let suggestionHeader = document.getElementById('suggestionHeader');
-  if (!suggestionHeader) {
-    suggestionHeader = document.createElement('h3');
-    suggestionHeader.id = 'suggestionHeader';
-    suggestionHeader.className = 'suggestion-header';
-    suggestionHeader.innerHTML = '💡 Try this instead...';
-    
-    // Insert before the form group
-    const formGroup = document.querySelector('.form-group');
-    if (formGroup) {
-      formGroup.parentNode.insertBefore(suggestionHeader, formGroup);
-    }
+  // Hide suggestion header (no longer needed)
+  const suggestionHeader = document.getElementById('suggestionHeader');
+  if (suggestionHeader) {
+    hideElement(suggestionHeader);
   }
-  showElement(suggestionHeader);
   
   // Show the comment textarea with the suggestion
   if (commentEl) {
@@ -290,11 +284,29 @@ function showSuggestionForm(suggestion, originalComment = null) {
     suggestionActions = document.createElement('div');
     suggestionActions.id = 'suggestionActions';
     suggestionActions.className = 'button-group';
-    suggestionActions.innerHTML = `
-      <button type="button" class="btn_suggestion" onclick="regenerateSuggestion()">🔄 Regenerate</button>
-      <button type="button" class="btn_suggestion btn_submit" onclick="submitSuggestion()">✅ Submit</button>
-      <button type="button" class="btn_suggestion" onclick="cancelSuggestion()">❌ Cancel</button>
-    `;
+    
+    // Create buttons with proper event listeners instead of onclick
+    const regenerateBtn = document.createElement('button');
+    regenerateBtn.type = 'button';
+    regenerateBtn.className = 'btn_suggestion';
+    regenerateBtn.textContent = '🔄 Regenerate';
+    regenerateBtn.addEventListener('click', regenerateSuggestion);
+    
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'button';
+    submitBtn.className = 'btn_suggestion btn_submit';
+    submitBtn.textContent = '✅ Submit';
+    submitBtn.addEventListener('click', submitSuggestion);
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn_suggestion';
+    cancelBtn.textContent = '❌ Cancel';
+    cancelBtn.addEventListener('click', cancelSuggestion);
+    
+    suggestionActions.appendChild(regenerateBtn);
+    suggestionActions.appendChild(submitBtn);
+    suggestionActions.appendChild(cancelBtn);
     
     // Insert after the original reference
     if (originalReference) {
@@ -341,7 +353,7 @@ function resetCommentForm() {
  * Cancels suggestion editing and returns to empty comment form
  */
 export function cancelSuggestion() {
-  console.log('❌ User cancelled suggestion editing');
+  // User cancelled suggestion editing
   
   // Clear the stored original comment
   originalProblematicComment = null;
@@ -350,9 +362,3 @@ export function cancelSuggestion() {
   clearStatus();
   resetCommentForm();
 }
-
-// Make functions globally available for onclick handlers
-window.regenerateSuggestion = regenerateSuggestion;
-window.submitSuggestion = submitSuggestion;
-window.cancelSuggestion = cancelSuggestion;
-window.handleCommentSubmit = handleCommentSubmit;

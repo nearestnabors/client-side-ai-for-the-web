@@ -29,7 +29,7 @@ function showElement(element, displayType = 'block') {
     }
   }
 }
-import { showSuccessNotification } from './ui-helpers.js';
+import { showSuccessNotification, clearDOMCache } from './ui-helpers.js';
 
 // API key storage
 let geminiApiKey = null;
@@ -42,22 +42,18 @@ const MASKED_KEY_DISPLAY = '•••••••••••••••••�
  * Automatically updates the UI to reflect the key status
  */
 export function loadApiKey() {
-  console.log('📂 Loading saved API key from localStorage...');
   const saved = localStorage.getItem('geminiApiKey');
   
   if (saved) {
-    console.log('✅ API key found in storage');
+    // API key found in storage, set up the application
     geminiApiKey = saved;
-    window.geminiApiKey = saved;
     
     // Remove the API configuration pane from DOM entirely for security
     const apiKeySection = document.getElementById('apiKeySection');
     if (apiKeySection) {
       apiKeySection.remove();
       // Clear DOM cache since elements were removed
-      if (window.clearDOMCache) {
-        window.clearDOMCache();
-      }
+      clearDOMCache();
     }
     
     // Show success notification
@@ -66,7 +62,7 @@ export function loadApiKey() {
     // Show upload section since API key is available
     showUploadSection();
   } else {
-    console.log('⚠️ No saved API key found');
+    // No saved API key found, show configuration
     // Hide upload section until API key is configured
     hideUploadSection();
     // Show API key configuration section
@@ -81,7 +77,6 @@ export function loadApiKey() {
  * @returns {boolean} - True if key was successfully saved, false otherwise
  */
 export function saveApiKey(customKey = null) {
-  console.log('💾 Attempting to save API key...');
   
   // Get the API key from parameter or input field
   let key = customKey;
@@ -92,24 +87,22 @@ export function saveApiKey(customKey = null) {
   
   // Check if key is empty or still masked
   if (!key || key === MASKED_KEY_DISPLAY) {
-    console.warn('⚠️ Invalid API key: empty or masked');
     alert('Please enter a valid API key');
     return false;
   }
   
   // Validate Google AI key format - Google AI keys start with 'AIza'
   if (!key.startsWith('AIza')) {
-    console.warn('⚠️ Invalid API key format');
+    // Google AI keys start with 'AIza'
     alert('Invalid API key format. Google AI keys should start with "AIza"');
     return false;
   }
   
-  console.log('✅ API key validation passed, saving to localStorage...');
+  // API key validation passed, save to localStorage
   
-  // Save to localStorage and update global variable
+  // Save to localStorage and update module variable
   localStorage.setItem('geminiApiKey', key);
   geminiApiKey = key;
-  window.geminiApiKey = key;
   
   // Mask the key in the input field for security
   const input = document.getElementById('apiKeyInput');
@@ -120,9 +113,7 @@ export function saveApiKey(customKey = null) {
   if (apiKeySection) {
     apiKeySection.remove();
     // Clear DOM cache since elements were removed
-    if (window.clearDOMCache) {
-      window.clearDOMCache();
-    }
+    clearDOMCache();
   }
   
   // Show success notification
@@ -131,8 +122,7 @@ export function saveApiKey(customKey = null) {
   // Show upload section since API key is now available
   showUploadSection();
   
-  console.log('🔑 Global geminiApiKey updated:', !!geminiApiKey);
-  console.log('🎉 API key successfully saved and UI updated');
+  // API key successfully saved and UI updated
   return true;
 }
 
@@ -149,9 +139,7 @@ export function getApiKey() {
  * @returns {boolean} - True if API key is available, false otherwise
  */
 export function isApiKeyAvailable() {
-  const available = !!geminiApiKey;
-  console.log(`🔍 API key availability check: ${available ? 'available' : 'not available'}`);
-  return available;
+  return !!geminiApiKey;
 }
 
 /**
@@ -166,7 +154,6 @@ function updateApiStatus(config) {
   statusEl.textContent = message;
   statusEl.className = `api-status ${type}`;
   showElement(statusEl);
-  console.log(`📱 API status updated: ${message}`);
 }
 
 /**
@@ -175,7 +162,7 @@ function updateApiStatus(config) {
 function hideApiStatus() {
   const statusEl = document.getElementById('apiStatus');
   if (statusEl && statusEl.classList.contains('available')) {
-    console.log('⏰ Auto-hiding API status message after 5 seconds');
+    // Auto-hide API status message after 5 seconds
     statusEl.classList.add('fade-out');
     
     setTimeout(() => {
@@ -190,7 +177,6 @@ function hideApiStatus() {
  * This function should be called during app initialization
  */
 export function setupApiKeyEventListeners() {
-  console.log('🔌 Setting up API key event listeners...');
   
   const saveButton = document.getElementById('btnSave');
   const input = document.getElementById('apiKeyInput');
@@ -198,21 +184,17 @@ export function setupApiKeyEventListeners() {
   // Check if elements exist before adding listeners (they may have been removed if API key is already saved)
   if (saveButton && input) {
     saveButton.addEventListener('click', () => {
-      console.log('🖱️ Save API key button clicked');
       saveApiKey();
     });
 
     // Allow saving with Enter key for better UX
     input.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
-        console.log('⌨️ Enter key pressed in API key input');
         saveApiKey();
       }
     });
-    console.log('✅ API key event listeners attached');
-  } else {
-    console.log('ℹ️ API key elements not found - likely already configured and removed');
   }
+  // Note: API key elements may not exist if key is already configured and removed
 }
 
 /**
@@ -220,11 +202,9 @@ export function setupApiKeyEventListeners() {
  * Useful for testing or when user wants to use a different key
  */
 export function clearApiKey() {
-  console.log('🗑️ Clearing saved API key...');
   
   localStorage.removeItem('geminiApiKey');
   geminiApiKey = null;
-  window.geminiApiKey = null;
   
   const input = document.getElementById('apiKeyInput');
   if (input) {
@@ -233,8 +213,6 @@ export function clearApiKey() {
   
   // Hide upload section since no API key is available
   hideUploadSection();
-  
-  console.log('✅ API key cleared successfully');
 }
 
 /**
@@ -244,7 +222,6 @@ function showUploadSection() {
   const uploadSection = document.getElementById('uploadSection');
   if (uploadSection) {
     showElement(uploadSection);
-    console.log('📤 Upload section shown - API key is available');
   }
 }
 
@@ -255,7 +232,6 @@ function showApiKeySection() {
   const apiKeySection = document.getElementById('apiKeySection');
   if (apiKeySection) {
     showElement(apiKeySection);
-    console.log('🔑 API key section shown - configuration needed');
   }
 }
 
@@ -266,9 +242,5 @@ function hideUploadSection() {
   const uploadSection = document.getElementById('uploadSection');
   if (uploadSection) {
     hideElement(uploadSection);
-    console.log('📤 Upload section hidden - API key required');
   }
 }
-
-// Make API key available globally for other modules
-window.geminiApiKey = geminiApiKey;

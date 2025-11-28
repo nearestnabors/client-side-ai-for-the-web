@@ -3,8 +3,30 @@
  * Contains utility functions for managing UI state and interactions
  */
 
+import { getApiKey } from './api-key.js';
+
 // DOM element cache for improved performance
 const domCache = new Map();
+
+// Import functions for event listeners (circular dependency is handled by ES6 modules)
+let handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit;
+
+// Lazy load these to avoid circular dependency issues at module initialization
+async function loadEventHandlers() {
+  if (!handleFileSelect) {
+    const imageUpload = await import('./image-upload.js');
+    handleFileSelect = imageUpload.handleFileSelect;
+    handleFile = imageUpload.handleFile;
+    generateAltText = imageUpload.generateAltText;
+    acceptAndPostImage = imageUpload.acceptAndPostImage;
+    cancelImageSelection = imageUpload.cancelImageSelection;
+    getCurrentImageData = imageUpload.getCurrentImageData;
+    
+    const commentModeration = await import('../../01multimodal-ai/js/comment-moderation.js');
+    handleCommentSubmit = commentModeration.handleCommentSubmit;
+  }
+  return { handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit };
+}
 
 /**
  * Gets a DOM element by ID with caching for improved performance
@@ -52,7 +74,7 @@ export function safeElementOperation(id, callback) {
       return false;
     }
   }
-  console.log(`ℹ️ Element '${id}' not found - operation skipped`);
+  // Element not found, operation skipped
   return false;
 }
 
@@ -99,7 +121,7 @@ export function updateSubmitButton() {
   safeElementOperation('comment', (commentEl) => {
     safeElementOperation('btnSubmit', (submitBtn) => {
       const comment = commentEl.value.trim();
-      submitBtn.disabled = !window.geminiApiKey || !comment;
+      submitBtn.disabled = !getApiKey() || !comment;
     });
   });
 }
@@ -112,8 +134,8 @@ export function updateUIState() {
   updateSubmitButton();
   
   // Show or hide the API key section based on API key availability
-  const hasApiKey = !!window.geminiApiKey;
-  console.log(`🔍 Updating UI state - API key available: ${hasApiKey}`);
+  const hasApiKey = !!getApiKey();
+  // Update UI state based on API key availability
   
   safeElementOperation('apiKeySection', (apiKeySection) => {
     if (hasApiKey) {
@@ -225,29 +247,24 @@ export function parseGeminiResponse(data, context = 'API call') {
 /**
  * Sets up all event listeners for the application
  */
-export function setupEventListeners() {
-  console.log('🔌 Setting up event listeners...');
-  
+export async function setupEventListeners() {
+  // Load event handlers (handles circular dependencies)
+  const handlers = await loadEventHandlers();
+  setupEventListenersInternal(handlers.handleFileSelect, handlers.handleFile, handlers.generateAltText, handlers.acceptAndPostImage, handlers.cancelImageSelection, handlers.getCurrentImageData, handlers.handleCommentSubmit);
+}
+
+function setupEventListenersInternal(handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit) {
   // Image upload functionality
   const uploadArea = getElement('uploadArea');
   const fileInput = getElement('fileInput');
   
-  console.log('🔍 Upload elements:', { uploadArea: !!uploadArea, fileInput: !!fileInput });
-  
   if (uploadArea && fileInput) {
     uploadArea.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => {
-      console.log('📁 File input change detected');
-      if (window.handleFileSelect) {
-        window.handleFileSelect(e);
-      } else {
-        console.error('❌ window.handleFileSelect not available');
-      }
+      handleFileSelect(e);
     });
-    console.log('✅ Upload area and file input event listeners attached');
-  } else {
-    console.error('❌ Upload area or file input not found');
   }
+  // Note: Upload area or file input may not exist on all pages
   
   // Drag and drop for image upload  
   if (uploadArea) {
@@ -266,11 +283,7 @@ export function setupEventListeners() {
       
       const files = e.dataTransfer.files;
       if (files.length > 0) {
-        if (window.handleFile) {
-          window.handleFile(files[0]);
-        } else {
-          console.error('❌ window.handleFile not available');
-        }
+        handleFile(files[0]);
       }
     });
   }
@@ -279,7 +292,6 @@ export function setupEventListeners() {
   const regenerateBtn = getElement('btnRegenerate');
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', () => {
-      console.log('🔄 Regenerating alt text...');
       
       // Hide the current textarea during regeneration
       const actionsEl = getElement('altTextActions');
@@ -292,8 +304,9 @@ export function setupEventListeners() {
       }
       
       // Call the alt text generation function with current image data
-      if (window.currentImageData && window.generateAltText) {
-        window.generateAltText(window.currentImageData);
+      const imageData = getCurrentImageData();
+      if (imageData) {
+        generateAltText(imageData);
       } else {
         console.error('❌ generateAltText or currentImageData not available');
         // Show error and restore interface
@@ -309,25 +322,15 @@ export function setupEventListeners() {
   const acceptBtn = getElement('btnAccept');
   if (acceptBtn) {
     acceptBtn.addEventListener('click', () => {
-      if (window.acceptAndPostImage) {
-        window.acceptAndPostImage();
-      } else {
-        console.error('❌ acceptAndPostImage not available');
-      }
+      acceptAndPostImage();
     });
   }
   
   // Cancel image selection
   const cancelBtn = getElement('btnCancel');
   if (cancelBtn) {
-    console.log('🔌 Setting up cancel image button event listener');
     cancelBtn.addEventListener('click', () => {
-      console.log('🖱️ Cancel image button clicked');
-      if (window.cancelImageSelection) {
-        window.cancelImageSelection();
-      } else {
-        console.error('❌ cancelImageSelection function not found');
-      }
+      cancelImageSelection();
     });
   }
   
@@ -335,11 +338,7 @@ export function setupEventListeners() {
   const commentForm = getElement('commentForm');
   if (commentForm) {
     commentForm.addEventListener('submit', (e) => {
-      if (window.handleCommentSubmit) {
-        window.handleCommentSubmit(e);
-      } else {
-        console.error('❌ handleCommentSubmit not available');
-      }
+      handleCommentSubmit(e);
     });
   }
   
@@ -348,7 +347,7 @@ export function setupEventListeners() {
     commentInput.addEventListener('input', updateSubmitButton);
   }
   
-  console.log('✅ All event listeners setup complete');
+  // All event listeners setup complete
 }
 
 /**
@@ -389,8 +388,5 @@ export function showSuccessNotification(message, duration = 3000) {
     }, 300); // Match CSS transition duration
   }, duration);
   
-  console.log('✅ Success notification shown:', message);
+  // Success notification shown
 }
-
-// Make clearDOMCache globally available for other modules
-window.clearDOMCache = clearDOMCache;
