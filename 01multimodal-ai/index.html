@@ -11,9 +11,8 @@
       <div class="post-header">
         <h1>AI-Powered Image Analysis & Comment Moderation</h1>
         <p>
-          Upload an image and let Google's Gemini AI analyze it and generate
-          alt-text. Add comments and see how AI moderates them for constructive
-          conversation.
+          Upload an image and let AI generate its <code>alt</code> text. Add
+          comments and AI will moderate them for toxicity.
         </p>
       </div>
 
@@ -92,6 +91,8 @@
           <div id="imagesFeed" class="images-feed"></div>
         </div>
 
+        <div id="status" class="status"></div>
+
         <!-- Comment Form - Only shown after image is posted -->
         <div id="commentSection" class="comment-section" style="display: none">
           <form id="commentForm">
@@ -110,8 +111,6 @@
               </button>
             </div>
           </form>
-
-          <div id="status" class="status"></div>
 
           <div
             id="commentsSection"

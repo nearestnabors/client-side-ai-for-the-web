@@ -173,7 +173,6 @@
   --color-primary-light: var(--jean-100);       /* Light primary background */
 
   /* Border Colors */
-  --color-border-light: var(--sage-200);        /* Light borders */
-  --color-border-medium: var(--jean-300);       /* Medium borders */
-  --color-border-dark: var(--jean-600);         /* Dark borders */
+  --color-border: var(--sage-200);        /* Light borders */
+  --color-border-gradient: linear-gradient(to right, var(--color-accent), var(--color-brand)) 1;  
 }
