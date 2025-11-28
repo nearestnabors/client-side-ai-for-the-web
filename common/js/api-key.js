@@ -41,9 +41,13 @@ export function loadApiKey() {
     
     // Show success notification
     showSuccessNotification('🔑 API key ready! You can now analyze images.');
+    
+    // Show upload section since API key is available
+    showUploadSection();
   } else {
     console.log('⚠️ No saved API key found');
-    // API configuration section is already visible, no need for redundant status message
+    // Hide upload section until API key is configured
+    hideUploadSection();
   }
 }
 
@@ -100,6 +104,9 @@ export function saveApiKey(customKey = null) {
   
   // Show success notification
   showSuccessNotification('🔑 API key saved successfully!');
+  
+  // Show upload section since API key is now available
+  showUploadSection();
   
   console.log('🔑 Global geminiApiKey updated:', !!geminiApiKey);
   console.log('🎉 API key successfully saved and UI updated');
@@ -203,7 +210,32 @@ export function clearApiKey() {
     input.value = '';
   }
   
+  // Hide upload section since no API key is available
+  hideUploadSection();
+  
   console.log('✅ API key cleared successfully');
+}
+
+/**
+ * Shows the upload section when API key is available
+ */
+function showUploadSection() {
+  const uploadSection = document.getElementById('uploadSection');
+  if (uploadSection) {
+    uploadSection.style.display = 'block';
+    console.log('📤 Upload section shown - API key is available');
+  }
+}
+
+/**
+ * Hides the upload section when no API key is configured
+ */
+function hideUploadSection() {
+  const uploadSection = document.getElementById('uploadSection');
+  if (uploadSection) {
+    uploadSection.style.display = 'none';
+    console.log('📤 Upload section hidden - API key required');
+  }
 }
 
 // Make API key available globally for other modules
