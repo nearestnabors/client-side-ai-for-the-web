@@ -17,7 +17,7 @@
         </p>
       </div>
 
-      <div class="upload-section" id="uploadSection">
+      <div class="upload-section" id="uploadSection" style="display: none">
         <div class="upload-area" id="uploadArea">
           <div class="upload-content">
             <div class="upload-icon">📁</div>
@@ -37,9 +37,8 @@
           </div>
           <img id="previewImg" class="preview-image" alt="Uploaded image" />
           <div id="altTextSection" class="alt-text-section">
-            <h3>AI-Generated Alt Text</h3>
             <div id="altTextResult" class="alt-text-result">
-              <div class="loading">Analyzing image with Gemini AI...</div>
+              <div class="loading">Generating alt text with AI...</div>
             </div>
             <div
               id="altTextActions"
@@ -56,7 +55,7 @@
                   🔄 Regenerate
                 </button>
                 <button id="btnAccept" class="btn_accept">
-                  ✅ Accept & Post Image
+                  ✅ Add alt text & post
                 </button>
               </div>
             </div>
@@ -67,7 +66,7 @@
       <div class="post-content">
         <div id="apiStatus" class="api-status" style="display: none"></div>
 
-        <div class="api-key-section" id="apiKeySection">
+        <div class="api-key-section" id="apiKeySection" style="display: none">
           <h3>🔑 Gemini API Configuration</h3>
           <p>
             Enter your API key to enable image analysis and comment moderation:

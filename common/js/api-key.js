@@ -48,6 +48,8 @@ export function loadApiKey() {
     console.log('⚠️ No saved API key found');
     // Hide upload section until API key is configured
     hideUploadSection();
+    // Show API key configuration section
+    showApiKeySection();
   }
 }
 
@@ -224,6 +226,17 @@ function showUploadSection() {
   if (uploadSection) {
     uploadSection.style.display = 'block';
     console.log('📤 Upload section shown - API key is available');
+  }
+}
+
+/**
+ * Shows the API key configuration section when no key is found
+ */
+function showApiKeySection() {
+  const apiKeySection = document.getElementById('apiKeySection');
+  if (apiKeySection) {
+    apiKeySection.style.display = 'block';
+    console.log('🔑 API key section shown - configuration needed');
   }
 }
 
