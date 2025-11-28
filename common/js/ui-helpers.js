@@ -183,10 +183,28 @@ export function setupEventListeners() {
   const regenerateBtn = getElement('btnRegenerate');
   if (regenerateBtn) {
     regenerateBtn.addEventListener('click', () => {
+      console.log('🔄 Regenerating alt text...');
+      
+      // Hide the current textarea during regeneration
+      const actionsEl = getElement('altTextActions');
+      const resultEl = getElement('altTextResult');
+      
+      if (actionsEl) actionsEl.style.display = 'none';
+      if (resultEl) {
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `<div>🔄 Regenerating alt text... <span class="loading"></span></div>`;
+      }
+      
+      // Call the alt text generation function with current image data
       if (window.currentImageData && window.generateAltText) {
         window.generateAltText(window.currentImageData);
       } else {
         console.error('❌ generateAltText or currentImageData not available');
+        // Show error and restore interface
+        if (resultEl) {
+          resultEl.innerHTML = `<div style="color: #c62828;">❌ Unable to regenerate - image data not available</div>`;
+        }
+        if (actionsEl) actionsEl.style.display = 'block';
       }
     });
   }

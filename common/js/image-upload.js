@@ -217,6 +217,12 @@ function updateAltTextResult(text) {
     editorEl.value = text;
     actionsEl.style.display = 'block';
     
+    // Make sure regenerate button is visible
+    const regenerateBtn = getElement('btnRegenerate');
+    if (regenerateBtn) {
+      regenerateBtn.style.display = 'block';
+    }
+    
     console.log('✅ Alt text generated and editing interface shown');
   }
 }
