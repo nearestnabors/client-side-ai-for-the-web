@@ -197,13 +197,9 @@ button {
   font-family: var(--font-ui);
 }
 
-button:hover,
-button:focus {
-  color: var(--color-text-primary);
-  border-color: var(--color-accent);
-}
-
-button:hover:not(:disabled) {
+button:hover:not(:disabled),
+button:active:not(:disabled),
+button:focus:not(:disabled) {
   transform: translateY(2px);
 }
 
@@ -221,7 +217,7 @@ button:disabled {
 .btn_accept,
 .btn_save {
   background: var(--color-accent);
-  color: var(--color-text-primary);
+  color: var(--amethyst-800);
 }
 
 /* Large button variant for main actions */

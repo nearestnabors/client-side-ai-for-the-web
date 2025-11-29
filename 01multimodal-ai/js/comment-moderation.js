@@ -94,7 +94,7 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
         }]
       }],
       generationConfig: {
-        maxOutputTokens: 1500,
+        maxOutputTokens: 3000,
         temperature: 0.3
       }
     })

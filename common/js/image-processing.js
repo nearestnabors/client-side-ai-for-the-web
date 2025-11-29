@@ -386,7 +386,7 @@ export async function generateGeminiAltText(imageData, controller) {
         ]
       }],
       generationConfig: {
-        maxOutputTokens: 2000,
+        maxOutputTokens: 4000,
         temperature: 0.4
       }
     })
