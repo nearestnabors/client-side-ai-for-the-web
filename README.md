@@ -2,6 +2,8 @@
 
 A client-side web application that demonstrates AI-powered image analysis and comment moderation using Google's Gemini AI API. Upload an image, get AI-generated alt text, and experience intelligent comment moderation that considers the image context.
 
+<img width="954" height="670" alt="Screenshot 2025-11-29 at 12 31 09 AM" src="https://github.com/user-attachments/assets/4214b3aa-9dbe-4a28-a99b-8e4b142d0979" />
+
 ## Features
 
 - **AI Image Analysis**: Upload images and get automatically generated alt text using Gemini 2.5 Flash
