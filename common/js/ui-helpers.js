@@ -5,28 +5,15 @@
 
 import { getApiKey } from './api-key.js';
 
+// Constants
+const DEFAULT_NOTIFICATION_DURATION = 3000;
+const NOTIFICATION_FADE_DURATION = 300;
+
 // DOM element cache for improved performance
 const domCache = new Map();
 
-// Import functions for event listeners (circular dependency is handled by ES6 modules)
-let handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit;
-
-// Lazy load these to avoid circular dependency issues at module initialization
-async function loadEventHandlers() {
-  if (!handleFileSelect) {
-    const imageProcessing = await import('./image-processing.js');
-    handleFileSelect = imageProcessing.handleFileSelect;
-    handleFile = imageProcessing.handleFile;
-    generateAltText = imageProcessing.generateAltText;
-    acceptAndPostImage = imageProcessing.acceptAndPostImage;
-    cancelImageSelection = imageProcessing.cancelImageSelection;
-    getCurrentImageData = imageProcessing.getCurrentImageData;
-    
-    const commentModeration = await import('../../01multimodal-ai/js/comment-moderation.js');
-    handleCommentSubmit = commentModeration.handleCommentSubmit;
-  }
-  return { handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit };
-}
+// Event handler registry to avoid circular dependencies
+const eventHandlers = new Map();
 
 /**
  * Gets a DOM element by ID with caching for improved performance
@@ -34,6 +21,10 @@ async function loadEventHandlers() {
  * @returns {Element|null} - The DOM element or null if not found
  */
 export function getElement(id) {
+  if (typeof id !== 'string' || !id.trim()) {
+    throw new Error('Element ID must be a non-empty string');
+  }
+  
   if (!domCache.has(id)) {
     const element = document.getElementById(id);
     domCache.set(id, element);
@@ -64,13 +55,17 @@ export function clearDOMCache() {
  * @returns {boolean} - True if element exists and callback was executed
  */
 export function safeElementOperation(id, callback) {
+  if (typeof callback !== 'function') {
+    throw new Error('Callback must be a function');
+  }
+  
   const element = getElement(id);
   if (element && element !== null) {
     try {
       callback(element);
       return true;
     } catch (error) {
-      console.error(`❌ Error in safeElementOperation for '${id}':`, error);
+      handleError(error, `safeElementOperation for '${id}'`);
       return false;
     }
   }
@@ -152,6 +147,10 @@ export function updateUIState() {
  * @returns {string} HTML-safe text
  */
 export function escapeHtml(text) {
+  if (typeof text !== 'string') {
+    throw new Error('Text to escape must be a string');
+  }
+  
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
@@ -164,6 +163,13 @@ export function escapeHtml(text) {
  * @param {Function} callback - Optional callback for custom error handling
  */
 export function handleError(error, context, callback = null) {
+  if (!error || typeof error.message !== 'string') {
+    throw new Error('Error object with message property is required');
+  }
+  if (typeof context !== 'string') {
+    throw new Error('Context must be a string');
+  }
+  
   const errorMsg = `❌ ${context}: ${error.message}`;
   console.error(errorMsg, error);
   
@@ -181,6 +187,13 @@ export function handleError(error, context, callback = null) {
  * @returns {string} - Formatted error message
  */
 export function createApiError(response, context) {
+  if (!response || typeof response.status === 'undefined') {
+    throw new Error('Response object with status property is required');
+  }
+  if (typeof context !== 'string') {
+    throw new Error('Context must be a string');
+  }
+  
   return `${context} failed (${response.status}): ${response.statusText}`;
 }
 
@@ -192,6 +205,13 @@ export function createApiError(response, context) {
  * @throws {Error} - If response cannot be parsed
  */
 export function parseGeminiResponse(data, context = 'API call') {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Response data must be an object');
+  }
+  if (typeof context !== 'string') {
+    throw new Error('Context must be a string');
+  }
+  
   // Extract response text from various possible structures
   let responseText = null;
   const candidate = data.candidates?.[0];
@@ -226,10 +246,13 @@ export function parseGeminiResponse(data, context = 'API call') {
   }
   
   if (!responseText) {
-    console.error(`No response text found in ${context} response:`, data);
-    console.error('Candidate object:', candidate);
-    console.error('Available keys in candidate:', candidate ? Object.keys(candidate) : 'No candidate');
-    console.error('Full candidate content object:', candidate?.content);
+    const debugInfo = {
+      data,
+      candidate,
+      candidateKeys: candidate ? Object.keys(candidate) : 'No candidate',
+      candidateContent: candidate?.content
+    };
+    console.error(`No response text found in ${context} response:`, debugInfo);
     
     // For truncated responses, provide a different error message
     if (candidate?.finishReason === 'MAX_TOKENS') {
@@ -245,20 +268,52 @@ export function parseGeminiResponse(data, context = 'API call') {
 }
 
 /**
- * Sets up all event listeners for the application
+ * Registers an event handler to avoid circular dependencies
+ * @param {string} name - Handler name
+ * @param {Function} handler - Handler function
  */
-export async function setupEventListeners() {
-  // Load event handlers (handles circular dependencies)
-  const handlers = await loadEventHandlers();
-  setupEventListenersInternal(handlers.handleFileSelect, handlers.handleFile, handlers.generateAltText, handlers.acceptAndPostImage, handlers.cancelImageSelection, handlers.getCurrentImageData, handlers.handleCommentSubmit);
+export function registerEventHandler(name, handler) {
+  if (typeof name !== 'string' || !name.trim()) {
+    throw new Error('Handler name must be a non-empty string');
+  }
+  if (typeof handler !== 'function') {
+    throw new Error('Handler must be a function');
+  }
+  
+  eventHandlers.set(name, handler);
 }
 
-function setupEventListenersInternal(handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelImageSelection, getCurrentImageData, handleCommentSubmit) {
+/**
+ * Gets a registered event handler
+ * @param {string} name - Handler name
+ * @returns {Function|null} - Handler function or null if not found
+ */
+function getEventHandler(name) {
+  return eventHandlers.get(name) || null;
+}
+
+/**
+ * Sets up all event listeners for the application
+ */
+export function setupEventListeners() {
+  setupEventListenersInternal();
+}
+
+function setupEventListenersInternal() {
+  // Get handlers from registry
+  const handleFileSelect = getEventHandler('handleFileSelect');
+  const handleFile = getEventHandler('handleFile');
+  const generateAltText = getEventHandler('generateAltText');
+  const acceptAndPostImage = getEventHandler('acceptAndPostImage');
+  const cancelImageSelection = getEventHandler('cancelImageSelection');
+  const getCurrentImageData = getEventHandler('getCurrentImageData');
+  const handleCommentSubmit = getEventHandler('handleCommentSubmit');
+  
   // Image upload functionality
   const uploadArea = getElement('uploadArea');
   const fileInput = getElement('fileInput');
   
-  if (uploadArea && fileInput) {
+  if (uploadArea && fileInput && handleFileSelect) {
     uploadArea.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => {
       handleFileSelect(e);
@@ -267,7 +322,7 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
   // Note: Upload area or file input may not exist on all pages
   
   // Drag and drop for image upload  
-  if (uploadArea) {
+  if (uploadArea && handleFile) {
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       uploadArea.classList.add('dragover');
@@ -290,7 +345,7 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
   
   // Alt text regeneration
   const regenerateBtn = getElement('btnRegenerate');
-  if (regenerateBtn) {
+  if (regenerateBtn && generateAltText && getCurrentImageData) {
     regenerateBtn.addEventListener('click', () => {
       
       // Hide the current textarea during regeneration
@@ -308,7 +363,7 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
       if (imageData) {
         generateAltText(imageData);
       } else {
-        console.error('❌ generateAltText or currentImageData not available');
+        handleError(new Error('generateAltText or currentImageData not available'), 'Alt text regeneration');
         // Show error and restore interface
         if (resultEl) {
           resultEl.innerHTML = `<div style="color: var(--color-error);">❌ Unable to regenerate - image data not available</div>`;
@@ -320,7 +375,7 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
   
   // Accept and post image
   const acceptBtn = getElement('btnAccept');
-  if (acceptBtn) {
+  if (acceptBtn && acceptAndPostImage) {
     acceptBtn.addEventListener('click', () => {
       acceptAndPostImage();
     });
@@ -328,7 +383,7 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
   
   // Cancel image selection
   const cancelBtn = getElement('btnCancel');
-  if (cancelBtn) {
+  if (cancelBtn && cancelImageSelection) {
     cancelBtn.addEventListener('click', () => {
       cancelImageSelection();
     });
@@ -336,7 +391,7 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
   
   // Comment form handling
   const commentForm = getElement('commentForm');
-  if (commentForm) {
+  if (commentForm && handleCommentSubmit) {
     commentForm.addEventListener('submit', (e) => {
       handleCommentSubmit(e);
     });
@@ -356,7 +411,17 @@ function setupEventListenersInternal(handleFileSelect, handleFile, generateAltTe
  * @param {string} message - The message to display
  * @param {number} duration - How long to show the notification (default 3000ms)
  */
-export function showStatusNotification(type, message, duration = 3000) {
+export function showStatusNotification(type, message, duration = DEFAULT_NOTIFICATION_DURATION) {
+  if (typeof type !== 'string' || !type.trim()) {
+    throw new Error('Notification type must be a non-empty string');
+  }
+  if (typeof message !== 'string' || !message.trim()) {
+    throw new Error('Notification message must be a non-empty string');
+  }
+  if (typeof duration !== 'number' || duration <= 0) {
+    throw new Error('Duration must be a positive number');
+  }
+  
   // Remove any existing notifications
   const existingNotification = document.querySelector('.status-notification');
   if (existingNotification) {
@@ -386,7 +451,7 @@ export function showStatusNotification(type, message, duration = 3000) {
       if (notification.parentNode) {
         notification.parentNode.removeChild(notification);
       }
-    }, 300); // Match CSS transition duration
+    }, NOTIFICATION_FADE_DURATION); // Match CSS transition duration
   }, duration);
 }
 
@@ -395,6 +460,6 @@ export function showStatusNotification(type, message, duration = 3000) {
  * @param {string} message - The success message to display
  * @param {number} duration - How long to show the notification (default 3000ms)
  */
-export function showSuccessNotification(message, duration = 3000) {
+export function showSuccessNotification(message, duration = DEFAULT_NOTIFICATION_DURATION) {
   showStatusNotification('success', message, duration);
 }

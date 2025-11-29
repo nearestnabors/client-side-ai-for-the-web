@@ -4,11 +4,14 @@
  * Integrates with Google's Gemini AI for automated alt-text generation
  */
 
-import { escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, parseGeminiResponse, hideElement, showElement } from './ui-helpers.js';
+import { escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, parseGeminiResponse, hideElement, showElement, registerEventHandler } from './ui-helpers.js';
 import { getApiKey } from './api-key.js';
 
 // Constants
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_OUTPUT_TOKENS = 4000;
+const AI_TEMPERATURE = 0.4;
+const STATUS_NOTIFICATION_DURATION = 4000;
 
 let currentImageData = null;
 let currentAltText = null;
@@ -31,6 +34,10 @@ export function setAIGenerator(generator) {
  * @param {Event} e - File input change event
  */
 export function handleFileSelect(e) {
+  if (!e || !e.target || !e.target.files) {
+    throw new Error('Invalid file selection event');
+  }
+  
   const file = e.target.files[0];
   if (file) {
     handleFile(file);
@@ -43,15 +50,19 @@ export function handleFileSelect(e) {
  * @param {File} file - The image file to process
  */
 export function handleFile(file) {
+  if (!file || !(file instanceof File)) {
+    throw new Error('Valid File object is required');
+  }
+  
   // Check if it's actually an image
   if (!file.type.startsWith('image/')) {
-    showStatusNotification('failure', '❌ Please select an image file', 4000);
+    showStatusNotification('failure', '❌ Please select an image file', STATUS_NOTIFICATION_DURATION);
     return;
   }
   
   // Check file size
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    showStatusNotification('failure', '❌ Image file is too large. Please select a file under 10MB.', 4000);
+    showStatusNotification('failure', '❌ Image file is too large. Please select a file under 10MB.', STATUS_NOTIFICATION_DURATION);
     return;
   }
   
@@ -230,7 +241,7 @@ export function acceptAndPostImage() {
   
   const finalAltText = editorEl.value.trim();
   if (!finalAltText) {
-    showStatusNotification('failure', '❌ Please provide alt text before posting the image', 4000);
+    showStatusNotification('failure', '❌ Please provide alt text before posting the image', STATUS_NOTIFICATION_DURATION);
     return;
   }
   
@@ -264,6 +275,13 @@ export function acceptAndPostImage() {
  * @param {Object} imageData - The posted image data
  */
 export function displayPostedImage(imageData) {
+  if (!imageData || typeof imageData !== 'object') {
+    throw new Error('Image data object is required');
+  }
+  if (!imageData.imageData || !imageData.altText) {
+    throw new Error('Image data must contain imageData and altText properties');
+  }
+  
   const postedImageSection = getElement('postedImageSection');
   const postedImage = getElement('postedImage');
   const postedImageMeta = getElement('postedImageMeta');
@@ -386,8 +404,8 @@ export async function generateGeminiAltText(imageData, controller) {
         ]
       }],
       generationConfig: {
-        maxOutputTokens: 4000,
-        temperature: 0.4
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        temperature: AI_TEMPERATURE
       }
     })
   });
@@ -395,7 +413,7 @@ export async function generateGeminiAltText(imageData, controller) {
   // Handle API errors
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('API Error Response:', errorText);
+    handleError(new Error(`API Error Response: ${errorText}`), 'Gemini API call');
     let errorMsg;
     try {
       const error = JSON.parse(errorText);
@@ -413,4 +431,12 @@ export async function generateGeminiAltText(imageData, controller) {
   
   return altText;
 }
+
+// Register event handlers to avoid circular dependencies
+registerEventHandler('handleFileSelect', handleFileSelect);
+registerEventHandler('handleFile', handleFile);
+registerEventHandler('generateAltText', generateAltText);
+registerEventHandler('acceptAndPostImage', acceptAndPostImage);
+registerEventHandler('cancelImageSelection', cancelImageSelection);
+registerEventHandler('getCurrentImageData', getCurrentImageData);
 

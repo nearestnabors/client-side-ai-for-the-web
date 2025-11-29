@@ -28,9 +28,9 @@ window.addEventListener('load', () => {
   setupApiKeyEventListeners();
   
   // Defer other event listeners to ensure all modules are loaded
-  setTimeout(async () => {
-    // Set up all event listeners (async to handle dynamic imports)
-    await setupEventListeners();
+  setTimeout(() => {
+    // Set up all event listeners
+    setupEventListeners();
     
     // Update UI based on current state
     updateUIState();
