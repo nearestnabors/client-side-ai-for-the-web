@@ -14,13 +14,13 @@ let handleFileSelect, handleFile, generateAltText, acceptAndPostImage, cancelIma
 // Lazy load these to avoid circular dependency issues at module initialization
 async function loadEventHandlers() {
   if (!handleFileSelect) {
-    const imageUpload = await import('./image-upload.js');
-    handleFileSelect = imageUpload.handleFileSelect;
-    handleFile = imageUpload.handleFile;
-    generateAltText = imageUpload.generateAltText;
-    acceptAndPostImage = imageUpload.acceptAndPostImage;
-    cancelImageSelection = imageUpload.cancelImageSelection;
-    getCurrentImageData = imageUpload.getCurrentImageData;
+    const imageProcessing = await import('./image-processing.js');
+    handleFileSelect = imageProcessing.handleFileSelect;
+    handleFile = imageProcessing.handleFile;
+    generateAltText = imageProcessing.generateAltText;
+    acceptAndPostImage = imageProcessing.acceptAndPostImage;
+    cancelImageSelection = imageProcessing.cancelImageSelection;
+    getCurrentImageData = imageProcessing.getCurrentImageData;
     
     const commentModeration = await import('../../01multimodal-ai/js/comment-moderation.js');
     handleCommentSubmit = commentModeration.handleCommentSubmit;

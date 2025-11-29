@@ -3,7 +3,6 @@
  * Uses AI to evaluate comments for toxicity and suggest improvements
  */
 
-import { addComment } from '/common/js/storage.js';
 import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, parseGeminiResponse, hideElement, showElement } from '/common/js/ui-helpers.js';
 import { getApiKey } from '/common/js/api-key.js';
 
@@ -35,7 +34,6 @@ export async function handleCommentSubmit(e) {
     // Get current image context from the posted image in the DOM
     const postedImg = document.getElementById('postedImage');
     const imageDescription = postedImg ? postedImg.alt : null;
-    console.log('🖼️ Current alt text from DOM:', imageDescription);
     const analysis = await analyzeComment(comment, imageDescription);
     
     if (analysis.isProblematic) {
@@ -83,9 +81,6 @@ Even simple negative statements should be flagged if they don't provide construc
 ${imageDescription ? `Context: This comment is about an image described as: "${imageDescription}"\n\n` : ''}Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about appearance of photos, not about philosphical disagreements. The suggestion should be written as though by the author of the original comment, matching their tone and style but changing the content to be more respectful and constructive."}
 
 Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
-
-  // Log the prompt for debugging
-  console.log('🔍 Comment Moderation Prompt:', prompt);
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getApiKey()}`, {
     method: 'POST',
@@ -446,4 +441,47 @@ export function cancelSuggestion() {
   // Clear status and show empty form
   clearStatus();
   resetCommentForm();
+}
+
+/**
+ * Adds a new comment to the display
+ * @param {string} commentText - The comment text to add
+ */
+function addComment(commentText) {
+  const commentsSection = getElement('commentsSection');
+  const commentsList = getElement('commentsList');
+  const commentsHeader = getElement('commentsHeader');
+  
+  // Show the comments section
+  showElement(commentsSection);
+  if (commentsHeader) {
+    showElement(commentsHeader);
+  }
+  
+  // Create the comment element
+  const commentItem = document.createElement('div');
+  commentItem.className = 'comment-item';
+  
+  // Format the current date and time
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+  
+  // Build the comment HTML
+  commentItem.innerHTML = `
+    <div class="comment-text">${escapeHtml(commentText)}</div>
+    <div class="comment-meta">
+      <span class="comment-date">${dateStr}</span>
+    </div>
+  `;
+  
+  commentsList.appendChild(commentItem);
+  
+  // Scroll to the new comment
+  commentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
