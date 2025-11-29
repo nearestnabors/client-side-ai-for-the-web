@@ -3,8 +3,9 @@
  * Uses AI to evaluate comments for toxicity and suggest improvements
  */
 
-import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, parseGeminiResponse, hideElement, showElement, registerEventHandler } from '/common/js/ui-helpers.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement, registerEventHandler } from '/common/js/ui-helpers.js';
 import { getApiKey } from '/common/js/api-key.js';
+import { parseGeminiResponse } from './gemini-helpers.js';
 
 // Constants
 const MAX_OUTPUT_TOKENS = 3000;

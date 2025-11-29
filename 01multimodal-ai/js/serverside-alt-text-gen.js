@@ -3,8 +3,9 @@
  * Handles communication with Google's Gemini AI for alt-text generation
  */
 
-import { handleError, createApiError, parseGeminiResponse } from '/common/js/ui-helpers.js';
+import { handleError, createApiError } from '/common/js/ui-helpers.js';
 import { getApiKey } from '/common/js/api-key.js';
+import { parseGeminiResponse } from './gemini-helpers.js';
 
 // Constants
 const MAX_OUTPUT_TOKENS = 4000;
