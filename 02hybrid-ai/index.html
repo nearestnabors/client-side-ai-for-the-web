@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hybrid AI: Local & Cloud Image Analysis & Comment Moderation</title>
+    <link rel="stylesheet" href="../common/css/main.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="post-header">
+        <h1>Hybrid AI: Local & Cloud Analysis</h1>
+        <p>
+          Upload an image and let AI generate its <code>alt</code> text. Add
+          comments and AI will moderate them for toxicity. Uses Chrome's Prompt API
+          when available, with Google Gemini as fallback.
+        </p>
+      </div>
+
+      <div class="upload-section" id="uploadSection" style="display: none">
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-content">
+            <div class="upload-icon">📁</div>
+            <p>Click to upload an image or drag and drop here</p>
+            <input type="file" id="fileInput" accept="image/*" hidden />
+          </div>
+        </div>
+        <div id="imagePreview" class="image-preview" style="display: none">
+          <div class="image-preview-header">
+            <button
+              id="btnCancel"
+              class="btn_cancel"
+              title="Cancel and choose different image"
+            >
+              ✕
+            </button>
+          </div>
+          <img id="previewImg" class="preview-image" alt="Uploaded image" />
+          <div id="altTextSection" class="alt-text-section">
+            <div id="altTextResult" class="alt-text-result">
+              <div class="loading">Generating alt text with AI...</div>
+            </div>
+            <div
+              id="altTextActions"
+              class="alt-text-actions"
+              style="display: none"
+            >
+              <textarea
+                id="altTextEditor"
+                class="alt-text-editor"
+                placeholder="Edit alt text..."
+              ></textarea>
+              <div class="alt-text-buttons">
+                <button id="btnRegenerate" class="btn_regenerate">
+                  🔄 Regenerate
+                </button>
+                <button id="btnAccept" class="btn_accept">
+                  ✅ Add alt text & post
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-content">
+        <div id="apiStatus" class="api-status" style="display: none"></div>
+
+        <div class="api-key-section" id="apiKeySection" style="display: none">
+          <h3>🔑 Cloud AI Configuration</h3>
+          <p>
+            Enter your API key for cloud AI fallback when local AI is unavailable:
+          </p>
+          <div class="api-key-input">
+            <input
+              type="password"
+              id="apiKeyInput"
+              placeholder="Enter your Google AI API key"
+            />
+            <button id="btnSave" class="btn_save">Save Key</button>
+          </div>
+          <p class="api-key-help">
+            Get your API key from
+            <a href="https://aistudio.google.com/app/apikey" target="_blank"
+              >Google AI Studio</a
+            >. Required only when Chrome's Prompt API is not available.
+          </p>
+        </div>
+
+        <!-- Posted Image Display -->
+        <div id="postedImageSection" class="posted-image-section" style="display: none">
+          <img id="postedImage" class="posted-image" alt="" />
+          <div id="postedImageMeta" class="posted-image-meta"></div>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <!-- Comment Form - Only shown after image is posted -->
+        <div id="commentSection" class="comment-section" style="display: none">
+          <form id="commentForm">
+            <div class="form-group">
+              <textarea
+                id="comment"
+                name="comment"
+                placeholder="Share your thoughts in a constructive way..."
+                required
+              ></textarea>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="btn_submit" id="btnSubmit" disabled>
+                Submit Comment
+              </button>
+            </div>
+          </form>
+
+          <div
+            id="commentsSection"
+            class="comments-section"
+            style="display: none"
+          >
+            <h2 id="commentsHeader">Comments</h2>
+            <div id="commentsList" class="comments-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <p>
+        Demo for tutorial by
+        <a href="https://nearestnabors.com" target="_blank">RL Nabors</a>
+      </p>
+    </footer>
+
+    <!-- Load the main app as an ES6 module -->
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

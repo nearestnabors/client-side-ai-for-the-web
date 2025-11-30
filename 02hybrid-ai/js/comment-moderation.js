@@ -71,7 +71,7 @@ export async function handleCommentSubmit(e) {
  * @param {string} imageDescription - Optional description of the image being commented on
  * @returns {Object} Analysis result with isProblematic, reason, and suggestion
  */
-async function analyzeComment(comment, imageDescription = null) {
+export async function analyzeComment(comment, imageDescription = null) {
   const prompt = `You are a comment moderator for a constructive discussion platform. Analyze this comment and flag it as problematic if it contains:
 
 - Personal attacks, insults, or harassment
