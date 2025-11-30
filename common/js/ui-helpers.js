@@ -322,9 +322,17 @@ function setupEventListenersInternal() {
   
   // Comment form handling
   const commentForm = getElement('commentForm');
+  console.log('🔍 Comment form setup - form:', !!commentForm, 'handler:', !!handleCommentSubmit);
   if (commentForm && handleCommentSubmit) {
-    commentForm.addEventListener('submit', (e) => {
-      handleCommentSubmit(e);
+    commentForm.addEventListener('submit', async (e) => {
+      console.log('📝 Comment form submitted');
+      try {
+        await handleCommentSubmit(e);
+        console.log('✅ Comment submit handler completed successfully');
+      } catch (error) {
+        console.error('❌ Error in comment submit handler:', error);
+        handleError(error, 'Comment submission');
+      }
     });
   }
   

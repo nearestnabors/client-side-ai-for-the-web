@@ -4,7 +4,7 @@
  */
 
 import { generateGeminiAltText } from './serverside-alt-text-gen.js';
-import { parsePromptApiResponse, isPromptApiAvailable, createPromptApiSession } from './local-ai-helpers.js';
+import { parsePromptApiResponse, checkPromptApiAvailability, createPromptApiSession } from './local-ai-helpers.js';
 
 // Constants
 const PROMPT_API_MAX_LENGTH = 1000; // Prompt API has stricter limits
@@ -22,23 +22,36 @@ async function generatePromptApiAltText(imageData, controller) {
   }
   
   try {
-    // Note: Current Prompt API doesn't support images directly
-    // This is a placeholder for when image support is added
-    // For now, we'll fall back to Gemini for image analysis
+    console.log('🖼️ Testing multimodal Prompt API with real image data...');
     
-    const prompt = "Generate a concise alt text description for an uploaded image, focusing on the main subject, key visual elements, and setting. Since I cannot see the image, please provide a helpful template response that encourages the user to add their own description.";
-    
-    const response = await session.prompt(prompt, {
+    // Try the attachments format with real image data
+    const response = await session.prompt('Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting.', {
+      attachments: [{
+        type: 'image',
+        data: imageData
+      }],
       signal: controller.signal
     });
     
-    const altText = parsePromptApiResponse(response, 'Local image analysis');
+    console.log('🎉 Multimodal Prompt API response received:', response.substring(0, 100) + '...');
+    
+    // Check if the response indicates the AI actually saw the image
+    const lowercaseResponse = response.toLowerCase();
+    if (lowercaseResponse.includes('provide') && lowercaseResponse.includes('image') || 
+        lowercaseResponse.includes("can't see") || 
+        lowercaseResponse.includes("need") && lowercaseResponse.includes("image")) {
+      console.log('❌ AI response suggests image not visible, falling back to Gemini');
+      throw new Error('Prompt API did not process the image successfully');
+    }
+    
+    const altText = parsePromptApiResponse(response, 'Local multimodal image analysis');
     
     // Clean up the session
     session.destroy();
     
     return altText;
   } catch (error) {
+    console.log('❌ Multimodal Prompt API failed:', error.message);
     // Clean up the session on error
     if (session && session.destroy) {
       session.destroy();
@@ -62,22 +75,21 @@ export async function generateHybridAltText(imageData, controller) {
     throw new Error('AbortController instance is required');
   }
   
-  // Check if Prompt API is available
-  if (isPromptApiAvailable()) {
+  // Check if Prompt API is available and ready
+  const promptApiStatus = await checkPromptApiAvailability();
+  
+  if (promptApiStatus.available && promptApiStatus.ready) {
     try {
-      console.log('🔬 Attempting local AI analysis with Prompt API...');
-      // Note: Current Prompt API doesn't support images yet
-      // For now, we'll go directly to Gemini for image analysis
-      throw new Error('Prompt API does not support image analysis yet');
-      
-      // Uncomment when Prompt API supports images:
-      // const altText = await generatePromptApiAltText(imageData, controller);
-      // console.log('✅ Local AI analysis successful');
-      // return altText;
+      console.log('🔬 Attempting local multimodal AI analysis with Prompt API...');
+      const altText = await generatePromptApiAltText(imageData, controller);
+      console.log('✅ Local multimodal AI analysis successful');
+      return altText;
     } catch (error) {
-      console.warn('⚠️ Local AI failed, falling back to cloud AI:', error.message);
+      console.warn('⚠️ Local multimodal AI failed, falling back to cloud AI:', error.message);
       // Fall through to Gemini fallback
     }
+  } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
+    console.log('⬇️ Prompt API needs model download, using cloud AI');
   } else {
     console.log('ℹ️ Prompt API not available, using cloud AI');
   }

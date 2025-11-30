@@ -4,11 +4,11 @@
  * Uses hybrid AI approach: Prompt API (local) with Gemini fallback (cloud)
  */
 
-import { loadApiKey, setupApiKeyEventListeners } from '/common/js/api-key.js';
-import { setupEventListeners, updateUIState } from '/common/js/ui-helpers.js';
-import { setAIGenerator } from '/common/js/image-processing.js';
+import { loadApiKey, setupApiKeyEventListeners } from '../../common/js/api-key.js';
+import { setupEventListeners, updateUIState } from '../../common/js/ui-helpers.js';
+import { setAIGenerator } from '../../common/js/image-processing.js';
 import { generateHybridAltText } from './hybrid-alt-text-gen.js';
-import { isPromptApiAvailable, getPromptApiCapabilities } from './local-ai-helpers.js';
+import { checkPromptApiAvailability } from './local-ai-helpers.js';
 // Import hybrid comment moderation module to ensure it loads and registers handlers
 import './hybrid-comment-moderation.js';
 
@@ -22,22 +22,23 @@ const FADE_IN_DELAY_MS = 200; // Delay before container fade-in animation
  * Detects AI capabilities and configures hybrid system
  */
 window.addEventListener('load', async () => {
+  console.log('🚀 Application starting...');
+  
   // Configure hybrid AI generator via dependency injection
   setAIGenerator(generateHybridAltText);
   
-  // Check Prompt API availability and log capabilities
-  if (isPromptApiAvailable()) {
-    console.log('🔬 Prompt API detected! Hybrid mode enabled.');
-    try {
-      const capabilities = await getPromptApiCapabilities();
-      if (capabilities) {
-        console.log('✅ Prompt API capabilities:', capabilities);
-      }
-    } catch (error) {
-      console.warn('⚠️ Failed to get Prompt API capabilities:', error);
-    }
+  console.log('🔍 About to check Prompt API availability...');
+  // Check Prompt API availability with proper status checking
+  const promptApiStatus = await checkPromptApiAvailability();
+  console.log('📋 Prompt API status result:', promptApiStatus);
+  
+  if (promptApiStatus.available && promptApiStatus.ready) {
+    console.log('🔬 Prompt API ready! Hybrid mode enabled.');
+  } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
+    console.log('⬇️ Prompt API available but model needs download. Using cloud AI for now.');
   } else {
-    console.log('ℹ️ Prompt API not available. Cloud-only mode.');
+    console.log('ℹ️ Prompt API not available:', promptApiStatus.reason || 'Unknown reason');
+    console.log('ℹ️ Using cloud-only mode.');
   }
   
   // Load saved API key from storage (still needed for Gemini fallback)

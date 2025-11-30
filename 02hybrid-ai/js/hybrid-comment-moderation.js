@@ -4,8 +4,8 @@
  * Evaluates comments for toxicity and suggests improvements
  */
 
-import { updateSubmitButton, escapeHtml, handleError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement, registerEventHandler } from '/common/js/ui-helpers.js';
-import { getApiKey } from '/common/js/api-key.js';
+import { updateSubmitButton, escapeHtml, handleError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement, registerEventHandler } from '../../common/js/ui-helpers.js';
+import { getApiKey } from '../../common/js/api-key.js';
 import { analyzeComment as analyzeCommentWithGemini } from './comment-moderation.js';
 import { parsePromptApiResponse, isPromptApiAvailable, createPromptApiSession } from './local-ai-helpers.js';
 

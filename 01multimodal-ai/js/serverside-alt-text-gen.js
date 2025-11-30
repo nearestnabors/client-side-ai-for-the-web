@@ -3,8 +3,8 @@
  * Handles communication with Google's Gemini AI for alt-text generation
  */
 
-import { handleError, createApiError } from '/common/js/ui-helpers.js';
-import { getApiKey } from '/common/js/api-key.js';
+import { handleError, createApiError } from '../../common/js/ui-helpers.js';
+import { getApiKey } from '../../common/js/api-key.js';
 import { parseGeminiResponse } from './gemini-helpers.js';
 
 // Constants
@@ -30,6 +30,11 @@ export async function generateGeminiAltText(imageData, controller) {
     throw new Error('Invalid image data format. Expected data URL with MIME type.');
   }
   const mimeType = mimeMatch[1];
+  
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('❌ Please configure your Google AI API key first');
+  }
   
   // Sending request to Gemini AI for alt-text generation
   

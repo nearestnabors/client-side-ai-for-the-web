@@ -3,8 +3,8 @@
  * Handles communication with Google's Gemini AI for alt-text generation
  */
 
-import { handleError, createApiError } from '/common/js/ui-helpers.js';
-import { getApiKey } from '/common/js/api-key.js';
+import { handleError, createApiError } from '../../common/js/ui-helpers.js';
+import { getApiKey } from '../../common/js/api-key.js';
 import { parseGeminiResponse } from './gemini-helpers.js';
 
 // Constants
@@ -32,6 +32,11 @@ export async function generateGeminiAltText(imageData, controller) {
   const mimeType = mimeMatch[1];
   
   // Sending request to Gemini AI for alt-text generation
+  
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('❌ Please configure your Google AI API key first');
+  }
   
   // Make API request to Gemini
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {

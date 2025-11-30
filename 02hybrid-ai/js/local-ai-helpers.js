@@ -29,14 +29,76 @@ export function parsePromptApiResponse(responseText, context = 'API call') {
 }
 
 /**
- * Checks if Prompt API is available in the current browser
- * @returns {boolean} - True if Prompt API is supported
+ * Checks if Prompt API is available and ready in the current browser
+ * Based on your working implementation
+ * @returns {Promise<Object>} - Status object with availability info
+ */
+export async function checkPromptApiAvailability() {
+  console.log('🔍 Checking Prompt API availability...');
+  console.log('🔍 window.LanguageModel exists:', !!window.LanguageModel);
+  console.log('🔍 window.LanguageModel type:', typeof window.LanguageModel);
+  
+  // Step 1: Check if the API exists at all
+  if (!window.LanguageModel) {
+    console.log('❌ Prompt API not supported in this browser');
+    return { 
+      available: false, 
+      reason: 'Prompt API not supported in this browser' 
+    };
+  }
+
+  console.log('✅ window.LanguageModel found');
+
+  try {
+    console.log('🔄 Calling LanguageModel.availability()...');
+    // Step 2: Check the model's availability status  
+    const availability = await LanguageModel.availability();
+    console.log('📊 Availability received:', availability);
+    
+    // Convert the availability response to our expected format
+    const capabilities = { available: availability };
+    
+    switch (capabilities.available) {
+      case 'readily':
+      case 'available':
+        // Model is downloaded and ready to use
+        console.log('✅ Prompt API ready for use!');
+        return { available: true, ready: true };
+        
+      case 'after-download':
+        // API exists but model needs to download first
+        console.log('⬇️ Prompt API available but needs model download');
+        return { 
+          available: true, 
+          ready: false, 
+          needsDownload: true 
+        };
+        
+      case 'no':
+      default:
+        // API exists but model isn't available on this device
+        console.log('❌ Model not available on this device, status:', capabilities.available);
+        return { 
+          available: false, 
+          reason: 'Model not available on this device' 
+        };
+    }
+  } catch (error) {
+    console.log('❌ Error checking capabilities:', error);
+    console.log('❌ Error stack:', error.stack);
+    return { 
+      available: false, 
+      reason: `Error checking capabilities: ${error.message}` 
+    };
+  }
+}
+
+/**
+ * Simple sync check for backwards compatibility
+ * @returns {boolean} - True if Prompt API exists (not necessarily ready)
  */
 export function isPromptApiAvailable() {
-  return typeof window !== 'undefined' && 
-         'ai' in window && 
-         'languageModel' in window.ai &&
-         typeof window.ai.languageModel.capabilities === 'function';
+  return !!(window.LanguageModel);
 }
 
 /**
@@ -49,8 +111,8 @@ export async function getPromptApiCapabilities() {
   }
   
   try {
-    const capabilities = await window.ai.languageModel.capabilities();
-    return capabilities;
+    const availability = await LanguageModel.availability();
+    return { available: availability };
   } catch (error) {
     console.warn('Failed to get Prompt API capabilities:', error);
     return null;
@@ -67,9 +129,9 @@ export async function createPromptApiSession() {
   }
   
   try {
-    const session = await window.ai.languageModel.create({
+    const session = await LanguageModel.create({
       temperature: 0.4,
-      topK: 3,
+      topK: 3
     });
     return session;
   } catch (error) {
