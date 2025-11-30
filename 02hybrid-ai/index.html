@@ -3,17 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hybrid AI: Local & Cloud Image Analysis & Comment Moderation</title>
+    <title>
+      Hybrid AI: Local Image Analysis & Comment Moderation with Cloud Fallback
+    </title>
     <link rel="stylesheet" href="../common/css/main.css" />
   </head>
   <body>
     <div class="container">
       <div class="post-header">
-        <h1>Hybrid AI: Local & Cloud Analysis</h1>
+        <h1>
+          Hybrid AI: Local Image Analysis & Comment Moderation with Cloud
+          Fallback
+        </h1>
         <p>
           Upload an image and let AI generate its <code>alt</code> text. Add
-          comments and AI will moderate them for toxicity. Uses Chrome's Prompt API
-          when available, with Google Gemini as fallback.
+          comments and AI will moderate them for toxicity. Uses Chrome's Prompt
+          API when available, with Google Gemini as fallback.
         </p>
       </div>
 
@@ -69,7 +74,8 @@
         <div class="api-key-section" id="apiKeySection" style="display: none">
           <h3>🔑 Cloud AI Configuration</h3>
           <p>
-            Enter your API key for cloud AI fallback when local AI is unavailable:
+            Enter your API key for cloud AI fallback when local AI is
+            unavailable:
           </p>
           <div class="api-key-input">
             <input
@@ -88,7 +94,11 @@
         </div>
 
         <!-- Posted Image Display -->
-        <div id="postedImageSection" class="posted-image-section" style="display: none">
+        <div
+          id="postedImageSection"
+          class="posted-image-section"
+          style="display: none"
+        >
           <img id="postedImage" class="posted-image" alt="" />
           <div id="postedImageMeta" class="posted-image-meta"></div>
         </div>
