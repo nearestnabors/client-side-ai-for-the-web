@@ -205,20 +205,53 @@ export function regenerateSuggestion() {
 /**
  * Submits the suggested comment text
  */
-export function submitSuggestion() {
+export async function submitSuggestion() {
   const commentEl = getElement('comment');
-  
   const suggestedText = commentEl.value.trim();
   
-  // Submitting AI-suggested comment
+  if (!suggestedText) return;
   
-  // Use the suggested text and post the comment
-  addComment(suggestedText);
+  console.log('🔒 Re-evaluating comment before posting to prevent bypass...');
   
-  // Show success notification and reset form
-  showSuccessNotification('💬 Comment posted successfully!');
-  clearStatus();
-  resetCommentForm();
+  // SECURITY: Re-evaluate the comment before posting to prevent toxic content bypass
+  // Hide form and show processing UI just like initial submission
+  hideCommentForm();
+  showProcessingMessage();
+  
+  try {
+    // Get current image context from the posted image in the DOM
+    const postedImg = document.getElementById('postedImage');
+    const imageDescription = postedImg ? postedImg.alt : null;
+    const analysis = await analyzeComment(suggestedText, imageDescription);
+    
+    if (analysis.isProblematic) {
+      // Comment is still problematic - block it and show new suggestion
+      console.warn('🚨 User attempted to bypass moderation with toxic content');
+      showStatus({
+        type: 'blocked',
+        title: '⚠️ Comment Still Needs Revision',
+        message: analysis.reason
+      });
+      showSuggestionForm(analysis.suggestion);
+      return;
+    }
+    
+    // Comment passed re-evaluation - post it
+    console.log('✅ Comment passed re-evaluation, posting...');
+    addComment(suggestedText);
+    
+    // Show success notification and reset form
+    showSuccessNotification('💬 Comment posted successfully!');
+    clearStatus();
+    resetCommentForm();
+    
+  } catch (error) {
+    console.error('❌ Error re-evaluating comment:', error);
+    showStatus({ 
+      type: 'error', 
+      message: 'Unable to verify comment. Please try again or contact support.' 
+    });
+  }
 }
 
 /**
