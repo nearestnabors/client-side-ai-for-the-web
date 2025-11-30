@@ -102,6 +102,25 @@ export function isPromptApiAvailable() {
 }
 
 /**
+ * Checks if user activation is available for Prompt API operations
+ * @returns {boolean} - True if user has recently interacted with the page
+ */
+export function hasUserActivation() {
+  return !!(navigator.userActivation?.isActive);
+}
+
+/**
+ * Gets user-friendly message about activation requirements
+ * @returns {string} - Message explaining what user needs to do
+ */
+export function getUserActivationMessage() {
+  if (hasUserActivation()) {
+    return 'User activation detected - ready for local AI';
+  }
+  return 'Local AI requires user interaction: please click, tap, or press a key to enable model downloads';
+}
+
+/**
  * Gets Prompt API capabilities and checks if it's ready for use
  * @returns {Promise<Object|null>} - Capabilities object or null if not available
  */
@@ -121,6 +140,7 @@ export async function getPromptApiCapabilities() {
 
 /**
  * Creates a Prompt API session if available
+ * Follows Chrome best practices for user activation to trigger model downloads
  * @returns {Promise<Object|null>} - Session object or null if not available
  */
 export async function createPromptApiSession() {
@@ -128,7 +148,15 @@ export async function createPromptApiSession() {
     return null;
   }
   
+  // Check for user activation per Chrome best practices
+  if (!navigator.userActivation?.isActive) {
+    console.warn('⚠️ User activation required for Prompt API session creation');
+    console.log('💡 Tip: User must click, tap, or press a key before AI model can be initialized');
+    return null;
+  }
+  
   try {
+    console.log('✅ User activation detected, creating Prompt API session...');
     const session = await LanguageModel.create({
       temperature: 0.4,
       topK: 3

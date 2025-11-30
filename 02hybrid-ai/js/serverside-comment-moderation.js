@@ -1,13 +1,12 @@
 /**
- * Hybrid Comment Moderation
- * Uses Chrome's Prompt API when available, falls back to Google's Gemini AI
- * Evaluates comments for toxicity and suggests improvements
+ * Server-side Comment Moderation  
+ * Uses Google's Gemini AI to evaluate comments for toxicity and suggest improvements
  */
 
-import { updateSubmitButton, escapeHtml, handleError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement, registerEventHandler } from '../../common/js/ui-helpers.js';
+import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement, registerEventHandler } from '../../common/js/ui-helpers.js';
 import { getApiKey } from '../../common/js/api-key.js';
-import { analyzeComment as analyzeCommentWithGemini } from './comment-moderation.js';
-import { parsePromptApiResponse, isPromptApiAvailable, createPromptApiSession } from './local-ai-helpers.js';
+import { parseGeminiResponse } from './gemini-helpers.js';
+import { analyzeComment } from './comment-moderation.js';
 
 // Constants
 const MAX_OUTPUT_TOKENS = 3000;
@@ -15,94 +14,6 @@ const AI_TEMPERATURE = 0.3;
 
 // Store the original problematic comment for regeneration
 let originalProblematicComment = null;
-
-/**
- * Analyzes comment using Chrome's Prompt API (local inference)
- * @param {string} comment - The comment text to analyze
- * @param {string} imageDescription - Optional description of the image being commented on
- * @returns {Object} Analysis result with isProblematic, reason, and suggestion
- */
-async function analyzeCommentWithPromptApi(comment, imageDescription = null) {
-  const session = await createPromptApiSession();
-  if (!session) {
-    throw new Error('Failed to create Prompt API session');
-  }
-  
-  try {
-    const prompt = `You are a comment moderator for a constructive discussion platform. Analyze this comment and flag it as problematic if it contains:
-
-- Personal attacks, insults, or harassment
-- Hate speech or discriminatory language  
-- Excessive negativity without constructive feedback
-- Hostile, aggressive, or inflammatory tone
-- Comments that could discourage participation (like "Hate it!" or "This sucks!" without explanation)
-- Bad faith arguments or trolling behavior
-
-Even simple negative statements should be flagged if they don't provide constructive feedback or seem designed to be discouraging.
-
-${imageDescription ? `Context: This comment is about an image described as: "${imageDescription}"\n\n` : ''}Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about the appearance of photos, not about philosophical disagreements. The suggestion should be written as though by the author of the original comment, matching their tone and style but changing the content to be more respectful and constructive"}
-
-Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
-
-    const response = await session.prompt(prompt);
-    const responseText = parsePromptApiResponse(response, 'Local comment analysis');
-    
-    // Clean up the session
-    session.destroy();
-    
-    // Extract JSON from the response
-    try {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      } else {
-        const error = new Error('Invalid response format - no JSON object found');
-        handleError(error, `Local comment analysis - no JSON in response: ${responseText}`);
-        throw error;
-      }
-    } catch (parseError) {
-      const error = new Error(`Invalid response format from local AI: ${parseError.message}`);
-      handleError(parseError, `Local comment analysis JSON parsing - Response: ${responseText}`);
-      throw error;
-    }
-  } catch (error) {
-    // Clean up the session on error
-    if (session && session.destroy) {
-      session.destroy();
-    }
-    throw error;
-  }
-}
-
-
-/**
- * Analyzes comment using hybrid approach: Prompt API first, Gemini fallback
- * @param {string} comment - The comment text to analyze
- * @param {string} imageDescription - Optional description of the image being commented on
- * @returns {Object} Analysis result with isProblematic, reason, and suggestion
- */
-async function analyzeComment(comment, imageDescription = null) {
-  // Check if Prompt API is available
-  if (isPromptApiAvailable()) {
-    try {
-      console.log('🔬 Attempting local AI comment analysis with Prompt API...');
-      const analysis = await analyzeCommentWithPromptApi(comment, imageDescription);
-      console.log('✅ Local AI comment analysis successful');
-      return analysis;
-    } catch (error) {
-      console.warn('⚠️ Local AI comment analysis failed, falling back to cloud AI:', error.message);
-      // Fall through to Gemini fallback
-    }
-  } else {
-    console.log('ℹ️ Prompt API not available, using cloud AI for comment analysis');
-  }
-  
-  // Fallback to Gemini
-  console.log('☁️ Using Gemini AI for comment analysis...');
-  const analysis = await analyzeCommentWithGemini(comment, imageDescription);
-  console.log('✅ Cloud AI comment analysis successful');
-  return analysis;
-}
 
 /**
  * Handles comment form submission
@@ -119,13 +30,6 @@ export async function handleCommentSubmit(e) {
   const commentEl = getElement('comment');
   const comment = commentEl.value.trim();
   if (!comment) return;
-  
-  // For Prompt API, we don't need an API key, but for fallback we do
-  // Check only if Prompt API is not available
-  if (!isPromptApiAvailable() && !getApiKey()) {
-    showStatus({ type: 'error', message: '❌ Please configure your Google AI API key for cloud AI fallback' });
-    return;
-  }
   
   // Hide textarea and replace button with processing message
   hideCommentForm();
@@ -162,8 +66,70 @@ export async function handleCommentSubmit(e) {
   }
 }
 
-// Import all the UI helper functions from the original comment moderation
-// These remain the same regardless of AI provider
+/**
+ * Sends a comment to AI for toxicity and tone analysis
+ * @param {string} comment - The comment text to analyze
+ * @param {string} imageDescription - Optional description of the image being commented on
+ * @returns {Object} Analysis result with isProblematic, reason, and suggestion
+ */
+export async function analyzeCommentWithGemini(comment, imageDescription = null) {
+  const prompt = `You are a comment moderator for a constructive discussion platform. Analyze this comment and flag it as problematic if it contains:
+
+- Personal attacks, insults, or harassment
+- Hate speech or discriminatory language  
+- Excessive negativity without constructive feedback
+- Hostile, aggressive, or inflammatory tone
+- Comments that could discourage participation (like "Hate it!" or "This sucks!" without explanation)
+- Bad faith arguments or trolling behavior
+
+Even simple negative statements should be flagged if they don't provide constructive feedback or seem designed to be discouraging.
+
+${imageDescription ? `Context: This comment is about an image described as: "${imageDescription}"\n\n` : ''}Return only JSON: {"isProblematic": true/false, "reason": "brief reason if problematic", "suggestion": "Create an alternative post that captures the same intent but is more respectful and constructive. Keep in mind, this is a discussion platform about the appearance of photos, not about philosophical disagreements. The suggestion should be written as though by the author of the original comment, matching their tone and style but changing the content to be more respectful and constructive"}
+
+Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getApiKey()}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: prompt
+        }]
+      }],
+      generationConfig: {
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        temperature: AI_TEMPERATURE
+      }
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error?.message || createApiError(response, 'Comment analysis API'));
+  }
+  
+  const data = await response.json();
+  const responseText = parseGeminiResponse(data, 'Comment analysis');
+  
+  // Extract JSON from the response
+  try {
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    } else {
+      const error = new Error('Invalid response format - no JSON object found');
+      handleError(error, `Comment analysis - no JSON in response: ${responseText}`);
+      throw error;
+    }
+  } catch (parseError) {
+    const error = new Error(`Invalid response format from AI: ${parseError.message}`);
+    handleError(parseError, `Comment analysis JSON parsing - Response: ${responseText}`);
+    throw error;
+  }
+}
 
 /**
  * Shows status messages to the user with a simple, safe approach
@@ -196,6 +162,8 @@ function showStatus(config) {
  * Regenerates a new suggestion for the blocked comment
  */
 export function regenerateSuggestion() {
+  // Regenerating comment suggestion for blocked comment
+  
   // Get the original problematic comment from storage
   const originalComment = originalProblematicComment;
   if (!originalComment) {
@@ -238,53 +206,20 @@ export function regenerateSuggestion() {
 /**
  * Submits the suggested comment text
  */
-export async function submitSuggestion() {
+export function submitSuggestion() {
   const commentEl = getElement('comment');
+  
   const suggestedText = commentEl.value.trim();
   
-  if (!suggestedText) return;
+  // Submitting AI-suggested comment
   
-  console.log('🔒 Re-evaluating comment before posting to prevent bypass...');
+  // Use the suggested text and post the comment
+  addComment(suggestedText);
   
-  // SECURITY: Re-evaluate the comment before posting to prevent toxic content bypass
-  // Hide form and show processing UI just like initial submission
-  hideCommentForm();
-  showProcessingMessage();
-  
-  try {
-    // Get current image context from the posted image in the DOM
-    const postedImg = document.getElementById('postedImage');
-    const imageDescription = postedImg ? postedImg.alt : null;
-    const analysis = await analyzeComment(suggestedText, imageDescription);
-    
-    if (analysis.isProblematic) {
-      // Comment is still problematic - block it and show new suggestion
-      console.warn('🚨 User attempted to bypass moderation with toxic content');
-      showStatus({
-        type: 'blocked',
-        title: '⚠️ Comment Still Needs Revision',
-        message: analysis.reason
-      });
-      showSuggestionForm(analysis.suggestion);
-      return;
-    }
-    
-    // Comment passed re-evaluation - post it
-    console.log('✅ Comment passed re-evaluation, posting...');
-    addComment(suggestedText);
-    
-    // Show success notification and reset form
-    showSuccessNotification('💬 Comment posted successfully!');
-    clearStatus();
-    resetCommentForm();
-    
-  } catch (error) {
-    console.error('❌ Error re-evaluating comment:', error);
-    showStatus({ 
-      type: 'error', 
-      message: 'Unable to verify comment. Please try again or contact support.' 
-    });
-  }
+  // Show success notification and reset form
+  showSuccessNotification('💬 Comment posted successfully!');
+  clearStatus();
+  resetCommentForm();
 }
 
 /**
@@ -477,6 +412,8 @@ function resetCommentForm() {
  * Cancels suggestion editing and returns to empty comment form
  */
 export function cancelSuggestion() {
+  // User cancelled suggestion editing
+  
   // Clear the stored original comment
   originalProblematicComment = null;
   

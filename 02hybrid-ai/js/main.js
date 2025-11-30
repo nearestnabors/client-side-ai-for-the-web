@@ -7,10 +7,12 @@
 import { loadApiKey, setupApiKeyEventListeners } from '../../common/js/api-key.js';
 import { setupEventListeners, updateUIState } from '../../common/js/ui-helpers.js';
 import { setAIGenerator } from '../../common/js/image-processing.js';
-import { generateHybridAltText } from './hybrid-alt-text-gen.js';
+import { generateAltText } from './alt-text-gen.js';
 import { checkPromptApiAvailability } from './local-ai-helpers.js';
-// Import hybrid comment moderation module to ensure it loads and registers handlers
-import './hybrid-comment-moderation.js';
+// Import serverside comment moderation module to register UI handlers
+import './serverside-comment-moderation.js';
+// Import comment moderation orchestrator
+import './comment-moderation.js';
 
 // Constants
 const INIT_DELAY_MS = 50; // Delay to ensure all modules are loaded
@@ -24,8 +26,8 @@ const FADE_IN_DELAY_MS = 200; // Delay before container fade-in animation
 window.addEventListener('load', async () => {
   console.log('🚀 Application starting...');
   
-  // Configure hybrid AI generator via dependency injection
-  setAIGenerator(generateHybridAltText);
+  // Configure AI generator via dependency injection
+  setAIGenerator(generateAltText);
   
   console.log('🔍 About to check Prompt API availability...');
   // Check Prompt API availability with proper status checking
