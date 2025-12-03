@@ -408,10 +408,11 @@ export async function tryClientSideThenServerSide(
   if (status.available) {
     try {
       console.log(`🔬 Attempting client-side ${serviceName} with Prompt API...`);
+      console.log('⏳ Using 30-second timeout for local AI inference (local models need more time than cloud APIs)');
       
-      // Add a timeout to prevent hanging
+      // Add a timeout to prevent indefinite hanging (30 seconds for local inference)
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Client-side timeout')), 5000);
+        setTimeout(() => reject(new Error('Client-side timeout')), 30000);
       });
       
       const result = await Promise.race([
@@ -424,7 +425,7 @@ export async function tryClientSideThenServerSide(
     } catch (error) {
       // Client-side failed or timed out
       if (error.message === 'Client-side timeout') {
-        console.log(`⏱️ Client-side ${serviceName} timed out after 5s, falling back to server-side`);
+        console.log(`⏱️ Client-side ${serviceName} timed out after 30s, falling back to server-side`);
       } else {
         console.log(`📥 Client-side not ready (${error.message}), using server-side`);
       }
