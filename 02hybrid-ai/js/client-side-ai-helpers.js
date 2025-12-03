@@ -86,14 +86,16 @@ export async function checkPromptApiAvailability() {
     const availabilityTime = performance.now() - availabilityStart;
     console.log(`Availability response received in ${availabilityTime.toFixed(2)}ms:`, availability);
     
-    // Log Chrome bug details
-    console.group('🐛 Chrome Bug Report Info:');
-    console.log('Expected: Model should report "available" when ready (per Chrome docs)');
-    console.log('Actual: Model persistently reports "downloading"');
-    console.log('Chrome components status: chrome://components/ shows Optimization Guide On Device Model as "Updated"');
-    console.log('Chrome flags: chrome://flags/#optimization-guide-on-device-model set to "Enabled BypassPerfRequirement"');
-    console.log('Documentation: https://developer.chrome.com/docs/ai/inform-users-of-model-download');
-    console.groupEnd();
+    // Log status info
+    if (availability === 'downloading') {
+      console.group('🐛 Chrome Bug Report Info:');
+      console.log('Expected: Model should report "available" when ready (per Chrome docs)');
+      console.log('Actual: Model persistently reports "downloading"');
+      console.log('Chrome components status: chrome://components/ shows Optimization Guide On Device Model as "Updated"');
+      console.log('Chrome flags: chrome://flags/#optimization-guide-on-device-model set to "Enabled BypassPerfRequirement"');
+      console.log('Documentation: https://developer.chrome.com/docs/ai/inform-users-of-model-download');
+      console.groupEnd();
+    }
     
     const result = (() => {
       switch (availability) {
@@ -236,14 +238,16 @@ export async function triggerModelDownload() {
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Model download timeout after 30 seconds')), 30000);
     });
-    
+     
     // Race between session creation and timeout
     const session = await Promise.race([
       LanguageModel.create({
         temperature: 0.4,
         topK: 3,
-        systemPrompt: 'You are a helpful assistant.',
-        initialPrompts: []
+        initialPrompts: [],
+        expectedInputs: [
+          { type: "image" }
+        ]
       }),
       timeoutPromise
     ]);
@@ -300,8 +304,10 @@ export async function createPromptApiSession() {
     const session = await LanguageModel.create({
       temperature: 0.4,
       topK: 3,
-      systemPrompt: 'You are a helpful assistant.',
-      initialPrompts: []
+      initialPrompts: [],
+      expectedInputs: [
+        { type: "image" }
+      ]
     });
     
     const elapsed = performance.now() - startTime;
