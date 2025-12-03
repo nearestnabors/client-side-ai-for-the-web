@@ -29,14 +29,24 @@ async function generateClientAltText(imageData, controller) {
   }
   
   try {
-    console.log('🖼️ Testing multimodal Prompt API with real image data...');
+    console.log('🖼️ Using Prompt API with proper multimodal format...');
     
-    // Try the attachments format with real image data
-    const response = await session.prompt('Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting.', {
-      attachments: [{
-        type: 'image',
-        data: imageData
-      }],
+    // Get the image element directly from the DOM - much more efficient!
+    // The image is already displayed in the preview
+    const imageElement = document.querySelector('#imagePreview img');
+    
+    if (!imageElement) {
+      throw new Error('Image element not found in preview');
+    }
+    
+    console.log('📸 Using image element from DOM:', imageElement.width, 'x', imageElement.height);
+    
+    // Use the correct Prompt API format - pass image element directly in the prompt
+    // Per https://github.com/webmachinelearning/prompt-api#multimodal-inputs
+    const response = await session.prompt([
+      'Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting.',
+      imageElement
+    ], {
       signal: controller.signal
     });
     
