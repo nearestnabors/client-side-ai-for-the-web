@@ -88,20 +88,21 @@ export async function checkPromptApiAvailability() {
     
     // Log Chrome bug details
     console.group('🐛 Chrome Bug Report Info:');
-    console.log('Expected: Model should report "readily" when Optimization Guide component shows "Updated"');
+    console.log('Expected: Model should report "available" when ready (per Chrome docs)');
     console.log('Actual: Model persistently reports "downloading"');
     console.log('Chrome components status: chrome://components/ shows Optimization Guide On Device Model as "Updated"');
     console.log('Chrome flags: chrome://flags/#optimization-guide-on-device-model set to "Enabled BypassPerfRequirement"');
+    console.log('Documentation: https://developer.chrome.com/docs/ai/inform-users-of-model-download');
     console.groupEnd();
     
     const result = (() => {
       switch (availability) {
         case 'readily':
-          console.log('✅ Status: Model is ready for immediate use');
+          console.log('✅ Status: Model is ready for immediate use (readily)');
           return { available: true, ready: true };
           
         case 'available':
-          console.log('✅ Status: Model is available');
+          console.log('✅ Status: Model is available and ready to use!');
           return { available: true, ready: true };
           
         case 'after-download':
@@ -114,8 +115,22 @@ export async function checkPromptApiAvailability() {
           };
         
         case 'downloading':
-          console.warn('⚠️ Status: Model reports "downloading" - This appears to be stuck');
-          console.log('Note: Model was previously downloaded and should be ready');
+          console.warn('📥 Status: Model is downloading');
+          console.log('Per Chrome docs, we should monitor downloadprogress events');
+          
+          // Try to set up download progress monitoring
+          if (typeof LanguageModel.addEventListener === 'function') {
+            console.log('Setting up downloadprogress event listener...');
+            LanguageModel.addEventListener('downloadprogress', (e) => {
+              console.log('Download progress:', e.loaded, '/', e.total);
+              if (e.loaded === e.total) {
+                console.log('✅ Download complete!');
+              }
+            });
+          } else {
+            console.log('Note: downloadprogress event API not available');
+          }
+          
           return { 
             available: true, 
             ready: false, 

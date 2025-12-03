@@ -64,8 +64,31 @@ window.addEventListener('load', async () => {
       console.log('💡 Model will be downloaded on first user interaction.');
       setPendingModelDownload(true);
     } else if (promptApiStatus.available && promptApiStatus.downloading) {
-      console.log('📥 Model status reports downloading, attempting direct initialization...');
-      console.log('☁️ Using cloud AI while checking model readiness...');
+      console.log('📥 Model status reports downloading...');
+      console.log('☁️ Using cloud AI while model downloads...');
+      
+      // Set up download progress monitoring if available
+      if (typeof LanguageModel.addEventListener === 'function') {
+        console.log('Setting up download progress monitoring...');
+        LanguageModel.addEventListener('downloadprogress', (e) => {
+          const percent = ((e.loaded / e.total) * 100).toFixed(0);
+          console.log(`Download progress: ${percent}% (${e.loaded}/${e.total} bytes)`);
+          
+          // Update UI with progress
+          const statusEl = document.getElementById('status');
+          if (statusEl) {
+            statusEl.className = 'status show info';
+            statusEl.innerHTML = `<p>📥 Downloading AI model: ${percent}%</p>`;
+          }
+          
+          if (e.loaded === e.total) {
+            console.log('✅ Download complete! Model should be available soon.');
+            if (statusEl) {
+              statusEl.innerHTML = '<p>✅ AI model downloaded! Initializing...</p>';
+            }
+          }
+        });
+      }
       
       // Try to force initialization by creating a session after a delay
       setTimeout(async () => {
@@ -107,9 +130,10 @@ window.addEventListener('load', async () => {
             
             console.group('📊 Chrome Bug Summary:');
             console.log('BUG: LanguageModel.availability() returns "downloading" incorrectly');
-            console.log('EXPECTED: Should return "readily" when model is available');
+            console.log('EXPECTED: Should return "available" when model is ready (per Chrome docs)');
             console.log('ACTUAL: Returns "downloading" even after successful session creation');
             console.log('WORKAROUND: Ignore availability() API and try session creation directly');
+            console.log('DOCS: https://developer.chrome.com/docs/ai/inform-users-of-model-download');
             console.groupEnd();
           }
           console.groupEnd();
