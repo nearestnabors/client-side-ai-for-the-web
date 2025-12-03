@@ -43,9 +43,15 @@ async function generateClientAltText(imageData, controller) {
     
     // Use the correct Prompt API format - pass image element directly in the prompt
     // Per https://github.com/webmachinelearning/prompt-api#multimodal-inputs
-    const response = await session.prompt([
-      'Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting.',
-      imageElement
+    const response = await session.prompt([{
+      role: 'user',
+      content: [{
+        type: 'text', value: 'Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting.',
+      }, {
+        type: 'image', value: imageElement,
+      }],
+    }
+      
     ], {
       signal: controller.signal
     });
