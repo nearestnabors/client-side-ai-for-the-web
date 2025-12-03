@@ -7,11 +7,9 @@
 import { loadApiKey, setupApiKeyEventListeners } from '../../common/js/api-key.js';
 import { setupEventListeners, updateUIState } from '../../common/js/ui-helpers.js';
 import { setAIGenerator } from '../../common/js/image-processing.js';
-import { generateAltText } from './alt-text-gen.js';
-import { checkPromptApiAvailability } from './local-ai-helpers.js';
-// Import serverside comment moderation module to register UI handlers
-import './serverside-comment-moderation.js';
-// Import comment moderation orchestrator
+import { generateAltText } from './alt-text-generation.js';
+import { checkPromptApiAvailability, setPendingModelDownload } from './client-side-ai-helpers.js';
+// Import comment moderation module (includes UI handlers)
 import './comment-moderation.js';
 
 // Constants
@@ -36,18 +34,105 @@ window.addEventListener('load', async () => {
   
   if (promptApiStatus.available && promptApiStatus.ready) {
     console.log('🔬 Prompt API ready! Hybrid mode enabled.');
-  } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
-    console.log('⬇️ Prompt API available but model needs download. Using cloud AI for now.');
+    console.log('✨ Client-side AI available - skipping API key requirement');
+    
+    // Skip API key setup entirely - we have local AI!
+    const apiKeySection = document.getElementById('apiKeySection');
+    if (apiKeySection) {
+      apiKeySection.remove();
+    }
+    
+    // Show upload section directly
+    const uploadSection = document.getElementById('uploadSection');
+    if (uploadSection) {
+      uploadSection.style.display = 'block';
+    }
+    
+    // Show success notification
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+      statusEl.className = 'status show success';
+      statusEl.innerHTML = '<p>🎉 Client-side AI ready! No API key needed.</p>';
+      setTimeout(() => {
+        statusEl.className = 'status';
+      }, 3000);
+    }
   } else {
-    console.log('ℹ️ Prompt API not available:', promptApiStatus.reason || 'Unknown reason');
-    console.log('ℹ️ Using cloud-only mode.');
+    // Model not ready - we'll need the API key for server-side fallback
+    if (promptApiStatus.available && promptApiStatus.needsDownload) {
+      console.log('⬇️ Prompt API available but model needs download. Using cloud AI for now.');
+      console.log('💡 Model will be downloaded on first user interaction.');
+      setPendingModelDownload(true);
+    } else if (promptApiStatus.available && promptApiStatus.downloading) {
+      console.log('📥 Model status reports downloading, attempting direct initialization...');
+      console.log('☁️ Using cloud AI while checking model readiness...');
+      
+      // Try to force initialization by creating a session after a delay
+      setTimeout(async () => {
+        try {
+          console.group('🔧 Attempting workaround for stuck "downloading" status');
+          console.log('Chrome bug: availability() returns "downloading" even when model is ready');
+          console.log('Attempting to create session directly to verify actual readiness...');
+          
+          const startTime = performance.now();
+          const testSession = await LanguageModel.create({
+            temperature: 0.4,
+            topK: 3,
+            systemPrompt: 'You are a helpful assistant.',
+            initialPrompts: []
+          });
+          
+          if (testSession) {
+            const elapsed = performance.now() - startTime;
+            console.log(`✅ SUCCESS: Session created in ${elapsed.toFixed(2)}ms despite "downloading" status!`);
+            console.log('This confirms the model IS ready but status API is incorrect');
+            
+            // Store globally to indicate model is ready
+            window.__promptApiReady = true;
+            
+            // Clean up test session
+            if (testSession.destroy) {
+              testSession.destroy();
+            }
+            
+            // Show success notification
+            const statusEl = document.getElementById('status');
+            if (statusEl) {
+              statusEl.className = 'status show success';
+              statusEl.innerHTML = '<p>🎉 AI model ready! Now using faster local processing.</p>';
+              setTimeout(() => {
+                statusEl.className = 'status';
+              }, 3000);
+            }
+            
+            console.group('📊 Chrome Bug Summary:');
+            console.log('BUG: LanguageModel.availability() returns "downloading" incorrectly');
+            console.log('EXPECTED: Should return "readily" when model is available');
+            console.log('ACTUAL: Returns "downloading" even after successful session creation');
+            console.log('WORKAROUND: Ignore availability() API and try session creation directly');
+            console.groupEnd();
+          }
+          console.groupEnd();
+        } catch (error) {
+          const elapsed = performance.now() - startTime;
+          console.log(`Model initialization failed after ${elapsed.toFixed(2)}ms:`, error.message);
+          console.groupEnd();
+        }
+      }, 2000); // Wait 2 seconds for page to fully load
+      
+    } else if (!promptApiStatus.available) {
+      console.log('ℹ️ Prompt API not available:', promptApiStatus.reason || 'Unknown reason');
+      console.log('ℹ️ Using cloud-only mode.');
+    }
+    
+    // Load saved API key from storage (needed for Gemini fallback)
+    loadApiKey();
   }
   
-  // Load saved API key from storage (still needed for Gemini fallback)
-  loadApiKey();
-  
-  // Set up API key event listeners first (these don't depend on other modules)
-  setupApiKeyEventListeners();
+  // Only set up API key event listeners if we need them
+  if (!(promptApiStatus.available && promptApiStatus.ready)) {
+    setupApiKeyEventListeners();
+  }
   
   // Defer other event listeners to ensure all modules are loaded
   setTimeout(() => {

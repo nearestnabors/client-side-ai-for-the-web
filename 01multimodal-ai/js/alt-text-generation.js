@@ -5,7 +5,7 @@
 
 import { handleError, createApiError } from '../../common/js/ui-helpers.js';
 import { getApiKey } from '../../common/js/api-key.js';
-import { parseGeminiResponse } from './gemini-helpers.js';
+import { parseGeminiResponse } from '../../common/js/gemini-helpers.js';
 
 // Constants
 const MAX_OUTPUT_TOKENS = 4000;
@@ -31,12 +31,12 @@ export async function generateGeminiAltText(imageData, controller) {
   }
   const mimeType = mimeMatch[1];
   
-  // Sending request to Gemini AI for alt-text generation
-  
   const apiKey = getApiKey();
   if (!apiKey) {
     throw new Error('❌ Please configure your Google AI API key first');
   }
+  
+  // Sending request to Gemini AI for alt-text generation
   
   // Make API request to Gemini
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {

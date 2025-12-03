@@ -8,7 +8,7 @@ console.log('🚀 01multimodal-ai main.js loading...');
 import { loadApiKey, setupApiKeyEventListeners } from '../../common/js/api-key.js';
 import { setupEventListeners, updateUIState } from '../../common/js/ui-helpers.js';
 import { setAIGenerator } from '../../common/js/image-processing.js';
-import { generateGeminiAltText } from './serverside-alt-text-gen.js';
+import { generateGeminiAltText } from './alt-text-generation.js';
 // Import other modules to ensure they load and register their global functions
 import './comment-moderation.js';
 
