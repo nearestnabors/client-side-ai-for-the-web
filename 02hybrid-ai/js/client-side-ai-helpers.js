@@ -240,6 +240,8 @@ export async function triggerModelDownload() {
     // Race between session creation and timeout
     const session = await Promise.race([
       LanguageModel.create({
+        expectedInputs: [{type: 'text', languages: ['en']}, {type: 'image'}],
+        expectedOutputs: [{type: 'text', languages: ['en']}],
         temperature: 0.4,
         topK: 3,
         systemPrompt: 'You are a helpful assistant.',
@@ -298,6 +300,8 @@ export async function createPromptApiSession() {
     });
     
     const session = await LanguageModel.create({
+      expectedInputs: [{type: 'text', languages: ['en']}, {type: 'image'}],
+      expectedOutputs: [{type: 'text', languages: ['en']}],
       temperature: 0.4,
       topK: 3,
       systemPrompt: 'You are a helpful assistant.',
