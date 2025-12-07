@@ -1,5 +1,5 @@
 /**
- * Local AI Helper Functions
+ * Clientside AI Helper Functions
  * Utilities for working with Chrome's Prompt API and fallback responses
  */
 
@@ -115,9 +115,9 @@ export function hasUserActivation() {
  */
 export function getUserActivationMessage() {
   if (hasUserActivation()) {
-    return 'User activation detected - ready for local AI';
+    return 'User activation detected - ready for clientside AI';
   }
-  return 'Local AI requires user interaction: please click, tap, or press a key to enable model downloads';
+  return 'Clientside AI requires user interaction: please click, tap, or press a key to enable model downloads';
 }
 
 /**

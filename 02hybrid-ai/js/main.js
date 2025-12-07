@@ -1,17 +1,15 @@
 /**
  * Main Application Initialization
  * Coordinates the loading and setup of all app features
- * Uses hybrid AI approach: Prompt API (local) with Gemini fallback (cloud)
+ * Uses hybrid AI approach: Prompt API (clientside) with Gemini fallback (serverside)
  */
 
 import { loadApiKey, setupApiKeyEventListeners } from '../../common/js/api-key.js';
 import { setupEventListeners, updateUIState } from '../../common/js/ui-helpers.js';
 import { setAIGenerator } from '../../common/js/image-processing.js';
 import { generateAltText } from './alt-text-gen.js';
-import { checkPromptApiAvailability } from './local-ai-helpers.js';
-// Import serverside comment moderation module to register UI handlers
-import './serverside-comment-moderation.js';
-// Import comment moderation orchestrator
+import { checkPromptApiAvailability } from './clientside-ai-helpers.js';
+// Import comment moderation module which includes UI handlers
 import './comment-moderation.js';
 
 // Constants
@@ -37,10 +35,10 @@ window.addEventListener('load', async () => {
   if (promptApiStatus.available && promptApiStatus.ready) {
     console.log('🔬 Prompt API ready! Hybrid mode enabled.');
   } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
-    console.log('⬇️ Prompt API available but model needs download. Using cloud AI for now.');
+    console.log('⬇️ Prompt API available but model needs download. Using serverside AI for now.');
   } else {
     console.log('ℹ️ Prompt API not available:', promptApiStatus.reason || 'Unknown reason');
-    console.log('ℹ️ Using cloud-only mode.');
+    console.log('ℹ️ Using serverside-only mode.');
   }
   
   // Load saved API key from storage (still needed for Gemini fallback)

@@ -5,7 +5,7 @@
 
 import { handleError, createApiError } from '../../common/js/ui-helpers.js';
 import { getApiKey } from '../../common/js/api-key.js';
-import { parseGeminiResponse } from './gemini-helpers.js';
+import { parseGeminiResponse } from '../../common/js/gemini-helpers.js';
 
 // Constants
 const MAX_OUTPUT_TOKENS = 4000;
