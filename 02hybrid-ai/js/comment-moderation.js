@@ -48,12 +48,7 @@ ${imageDescription ? `Context: This comment is about an image described as: "${i
 
 Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
 
-    const response = await session.prompt([{
-      role: "user",
-      content: [
-        { type: "text", value: prompt }
-      ]
-    }]);
+    const response = await session.prompt(prompt);
     const responseText = parsePromptApiResponse(response, 'Clientside comment analysis');
     
     console.log('🔍 Raw Prompt API comment response:', responseText);
