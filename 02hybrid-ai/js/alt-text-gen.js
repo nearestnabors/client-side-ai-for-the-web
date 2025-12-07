@@ -31,8 +31,6 @@ async function generateClientAltText(imgElement, controller) {
   }
   
   try {
-    console.log('🖼️ Testing multimodal Prompt API with DOM image element...');
-    
     // Use the correct multimodal message format for Prompt API
     const response = await session.prompt([{
       role: "user",
@@ -44,14 +42,11 @@ async function generateClientAltText(imgElement, controller) {
       signal: controller.signal
     });
     
-    console.log('🎉 Multimodal Prompt API response received:', response.substring(0, 100) + '...');
-    
     // Check if the response indicates the AI actually saw the image
     const lowercaseResponse = response.toLowerCase();
     if (lowercaseResponse.includes('provide') && lowercaseResponse.includes('image') || 
         lowercaseResponse.includes("can't see") || 
         lowercaseResponse.includes("need") && lowercaseResponse.includes("image")) {
-      console.log('❌ AI response suggests image not visible, falling back to Gemini');
       throw new Error('Prompt API did not process the image successfully');
     }
     
@@ -62,7 +57,6 @@ async function generateClientAltText(imgElement, controller) {
     
     return altText;
   } catch (error) {
-    console.log('❌ Multimodal Prompt API failed:', error.message);
     // Clean up the session on error
     if (session && session.destroy) {
       session.destroy();

@@ -34,10 +34,6 @@ export function parsePromptApiResponse(responseText, context = 'API call') {
  * @returns {Promise<Object>} - Status object with availability info
  */
 export async function checkPromptApiAvailability() {
-  console.log('🔍 Checking Prompt API availability...');
-  console.log('🔍 window.LanguageModel exists:', !!window.LanguageModel);
-  console.log('🔍 window.LanguageModel type:', typeof window.LanguageModel);
-  
   // Step 1: Check if the API exists at all
   if (!window.LanguageModel) {
     console.log('❌ Prompt API not supported in this browser');
@@ -47,13 +43,9 @@ export async function checkPromptApiAvailability() {
     };
   }
 
-  console.log('✅ window.LanguageModel found');
-
   try {
-    console.log('🔄 Calling LanguageModel.availability()...');
     // Step 2: Check the model's availability status  
     const availability = await LanguageModel.availability();
-    console.log('📊 Availability received:', availability);
     
     // Convert the availability response to our expected format
     const capabilities = { available: availability };
@@ -84,8 +76,6 @@ export async function checkPromptApiAvailability() {
         };
     }
   } catch (error) {
-    console.log('❌ Error checking capabilities:', error);
-    console.log('❌ Error stack:', error.stack);
     return { 
       available: false, 
       reason: `Error checking capabilities: ${error.message}` 
@@ -151,7 +141,6 @@ export async function createPromptApiSession() {
   // Check for user activation per Chrome best practices
   if (!navigator.userActivation?.isActive) {
     console.warn('⚠️ User activation required for Prompt API session creation');
-    console.log('💡 Tip: User must click, tap, or press a key before AI model can be initialized');
     return null;
   }
   

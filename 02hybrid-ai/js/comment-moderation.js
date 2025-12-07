@@ -51,8 +51,6 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
     const response = await session.prompt(prompt);
     const responseText = parsePromptApiResponse(response, 'Clientside comment analysis');
     
-    console.log('🔍 Raw Prompt API comment response:', responseText);
-    
     // Clean up the session
     session.destroy();
     
@@ -74,14 +72,11 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
       
       if (jsonMatch) {
         const jsonStr = jsonMatch[0];
-        console.log('🔍 Extracted JSON string:', jsonStr);
         return JSON.parse(jsonStr);
       } else {
-        console.log('❌ No JSON pattern found in response');
         throw new Error('Invalid response format - no JSON object found');
       }
     } catch (parseError) {
-      console.log('❌ JSON parse error:', parseError.message);
       throw new Error(`Invalid response format from clientside AI: ${parseError.message}`);
     }
   } catch (error) {
