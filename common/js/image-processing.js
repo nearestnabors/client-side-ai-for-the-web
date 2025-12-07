@@ -94,7 +94,7 @@ function displayImagePreview(dataUrl, fileName) {
 
 /**
  * Generates alt-text for an image using the configured AI provider
- * @param {string} imageData - Base64 data URL of the image
+ * @param {string} imageData - Base64 data URL of the image (for backwards compatibility)
  */
 export async function generateAltText(imageData) {
   // Check if AI generator is configured via dependency injection
@@ -127,8 +127,11 @@ export async function generateAltText(imageData) {
   }
   
   try {
-    // Call the injected AI generator
-    const altText = await aiGenerator(imageData, currentAnalysisController);
+    // Get the DOM img element that contains the image
+    const imgElement = getElement('previewImg');
+    
+    // Call the injected AI generator with the DOM element
+    const altText = await aiGenerator(imgElement, currentAnalysisController);
     
     if (altText) {
       currentAltText = altText;

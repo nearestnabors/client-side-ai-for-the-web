@@ -16,11 +16,11 @@ const PROMPT_API_MAX_LENGTH = 1000; // Prompt API has stricter limits
 
 /**
  * Generates alt text using Chrome's Prompt API (clientside inference)
- * @param {string} imageData - Base64 data URL of the image
+ * @param {HTMLImageElement} imgElement - DOM img element containing the image
  * @param {AbortController} controller - Abort controller for cancellation
  * @returns {Promise<string>} - Generated alt text
  */
-async function generateClientAltText(imageData, controller) {
+async function generateClientAltText(imgElement, controller) {
   const session = await createPromptApiSession();
   if (!session) {
     // Check if it's a user activation issue vs general availability
@@ -31,14 +31,16 @@ async function generateClientAltText(imageData, controller) {
   }
   
   try {
-    console.log('🖼️ Testing multimodal Prompt API with real image data...');
+    console.log('🖼️ Testing multimodal Prompt API with DOM image element...');
     
-    // Try the attachments format with real image data
-    const response = await session.prompt('Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting.', {
-      attachments: [{
-        type: 'image',
-        data: imageData
-      }],
+    // Use the correct multimodal message format for Prompt API
+    const response = await session.prompt([{
+      role: "user",
+      content: [
+        { type: "text", value: "Generate a concise alt text description for this image, focusing on the main subject, key visual elements, and setting." },
+        { type: "image", value: imgElement }
+      ]
+    }], {
       signal: controller.signal
     });
     
@@ -72,11 +74,17 @@ async function generateClientAltText(imageData, controller) {
 /**
  * Sends the image to Google's Gemini AI for alt-text generation
  * Uses the configured API key to make the request
- * @param {string} imageData - Base64 data URL of the image
+ * @param {HTMLImageElement} imgElement - DOM img element containing the image
  * @param {AbortController} controller - Abort controller for cancellation
  * @returns {Promise<string>} - Generated alt text
  */
-async function generateGeminiAltText(imageData, controller) {
+async function generateGeminiAltText(imgElement, controller) {
+  if (!imgElement || !(imgElement instanceof HTMLImageElement)) {
+    throw new Error('Valid HTMLImageElement is required');
+  }
+  
+  // Extract image data URL from DOM element
+  const imageData = imgElement.src;
   if (typeof imageData !== 'string' || !imageData.startsWith('data:image/')) {
     throw new Error('Valid image data URL is required');
   }
@@ -156,13 +164,13 @@ async function generateGeminiAltText(imageData, controller) {
 
 /**
  * Generates alt text using the best available AI: clientside first, serverside fallback
- * @param {string} imageData - Base64 data URL of the image
+ * @param {HTMLImageElement} imgElement - DOM img element containing the image
  * @param {AbortController} controller - Abort controller for cancellation
  * @returns {Promise<string>} - Generated alt text
  */
-export async function generateAltText(imageData, controller) {
-  if (typeof imageData !== 'string' || !imageData.startsWith('data:image/')) {
-    throw new Error('Valid image data URL is required');
+export async function generateAltText(imgElement, controller) {
+  if (!imgElement || !(imgElement instanceof HTMLImageElement)) {
+    throw new Error('Valid HTMLImageElement is required');
   }
   if (!controller || !(controller instanceof AbortController)) {
     throw new Error('AbortController instance is required');
@@ -174,7 +182,7 @@ export async function generateAltText(imageData, controller) {
   if (promptApiStatus.available && promptApiStatus.ready) {
     try {
       console.log('🔬 Attempting clientside AI analysis with Prompt API...');
-      const altText = await generateClientAltText(imageData, controller);
+      const altText = await generateClientAltText(imgElement, controller);
       console.log('✅ Clientside AI analysis successful');
       return altText;
     } catch (error) {
@@ -189,7 +197,7 @@ export async function generateAltText(imageData, controller) {
   
   // Fallback to Gemini using the existing function
   console.log('☁️ Using serverside Gemini AI for image analysis...');
-  const altText = await generateGeminiAltText(imageData, controller);
+  const altText = await generateGeminiAltText(imgElement, controller);
   console.log('✅ Serverside AI analysis successful');
   return altText;
 }
