@@ -48,21 +48,45 @@ ${imageDescription ? `Context: This comment is about an image described as: "${i
 
 Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
 
-    const response = await session.prompt(prompt);
+    const response = await session.prompt([{
+      role: "user",
+      content: [
+        { type: "text", value: prompt }
+      ]
+    }]);
     const responseText = parsePromptApiResponse(response, 'Clientside comment analysis');
+    
+    console.log('🔍 Raw Prompt API comment response:', responseText);
     
     // Clean up the session
     session.destroy();
     
-    // Extract JSON from the response
+    // Extract JSON from the response - try multiple patterns
     try {
-      const jsonMatch = responseText.match(/\\{[\\s\\S]*\\}/);
+      // First try to find JSON with proper braces (not escaped)
+      let jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        // Try with escaped braces
+        jsonMatch = responseText.match(/\\{[\\s\\S]*\\}/);
+      }
+      if (!jsonMatch) {
+        // Try to find JSON-like content between ```json blocks
+        const jsonBlockMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/i);
+        if (jsonBlockMatch) {
+          jsonMatch = [jsonBlockMatch[1]];
+        }
+      }
+      
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        const jsonStr = jsonMatch[0];
+        console.log('🔍 Extracted JSON string:', jsonStr);
+        return JSON.parse(jsonStr);
       } else {
+        console.log('❌ No JSON pattern found in response');
         throw new Error('Invalid response format - no JSON object found');
       }
     } catch (parseError) {
+      console.log('❌ JSON parse error:', parseError.message);
       throw new Error(`Invalid response format from clientside AI: ${parseError.message}`);
     }
   } catch (error) {
