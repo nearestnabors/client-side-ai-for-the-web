@@ -7,7 +7,7 @@
 import { handleError, createApiError } from '../../common/js/ui-helpers.js';
 import { getApiKey } from '../../common/js/api-key.js';
 import { parseGeminiResponse } from '../../common/js/gemini-helpers.js';
-import { parsePromptApiResponse, createPromptApiSession, isPromptApiAvailable, checkPromptApiAvailability } from './clientside-ai-helpers.js';
+import { parsePromptApiResponse, createPromptApiSession, checkPromptApiAvailability } from './clientside-ai-helpers.js';
 
 // Constants
 const MAX_OUTPUT_TOKENS = 4000;
@@ -23,10 +23,6 @@ const PROMPT_API_MAX_LENGTH = 1000; // Prompt API has stricter limits
 async function generateClientAltText(imgElement, controller) {
   const session = await createPromptApiSession();
   if (!session) {
-    // Check if it's a user activation issue vs general availability
-    if (isPromptApiAvailable() && !navigator.userActivation?.isActive) {
-      throw new Error('User interaction required to initialize clientside AI. Please click, tap, or press a key first.');
-    }
     throw new Error('Failed to create Prompt API session');
   }
   

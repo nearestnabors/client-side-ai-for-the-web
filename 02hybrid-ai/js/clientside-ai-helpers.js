@@ -60,7 +60,6 @@ export async function checkPromptApiAvailability() {
     const capabilities = { available: availability };
     
     switch (capabilities.available) {
-      case 'readily':
       case 'available':
         // Model is downloaded and ready to use
         promptApiAvailabilityCache = { available: true, ready: true };
@@ -75,7 +74,6 @@ export async function checkPromptApiAvailability() {
         };
         break;
         
-      case 'no':
       default:
         // API exists but model isn't available on this device
         promptApiAvailabilityCache = { 
@@ -95,13 +93,6 @@ export async function checkPromptApiAvailability() {
   }
 }
 
-/**
- * Simple sync check for backwards compatibility
- * @returns {boolean} - True if Prompt API exists (not necessarily ready)
- */
-export function isPromptApiAvailable() {
-  return !!(window.LanguageModel);
-}
 
 /**
  * Checks if user activation is available for Prompt API operations
@@ -127,7 +118,7 @@ export function getUserActivationMessage() {
  * @returns {Promise<Object|null>} - Capabilities object or null if not available
  */
 export async function getPromptApiCapabilities() {
-  if (!isPromptApiAvailable()) {
+  if (!window.LanguageModel) {
     return null;
   }
   
@@ -146,7 +137,7 @@ export async function getPromptApiCapabilities() {
  * @returns {Promise<Object|null>} - Session object or null if not available
  */
 export async function createPromptApiSession() {
-  if (!isPromptApiAvailable()) {
+  if (!window.LanguageModel) {
     return null;
   }
   

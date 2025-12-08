@@ -7,7 +7,7 @@
 import { updateSubmitButton, escapeHtml, handleError, createApiError, getElement, showSuccessNotification, showStatusNotification, hideElement, showElement, registerEventHandler } from '../../common/js/ui-helpers.js';
 import { getApiKey } from '../../common/js/api-key.js';
 import { parseGeminiResponse } from '../../common/js/gemini-helpers.js';
-import { parsePromptApiResponse, createPromptApiSession, isPromptApiAvailable } from './clientside-ai-helpers.js';
+import { parsePromptApiResponse, createPromptApiSession, checkPromptApiAvailability } from './clientside-ai-helpers.js';
 
 // Constants
 const MAX_OUTPUT_TOKENS = 3000;
@@ -25,10 +25,6 @@ let originalProblematicComment = null;
 async function analyzeClientComment(comment, imageDescription = null) {
   const session = await createPromptApiSession();
   if (!session) {
-    // Check if it's a user activation issue vs general availability
-    if (isPromptApiAvailable() && !navigator.userActivation?.isActive) {
-      throw new Error('User interaction required to initialize clientside AI. Please click, tap, or press a key first.');
-    }
     throw new Error('Failed to create Prompt API session');
   }
   
@@ -160,25 +156,26 @@ Comment to analyze: "${comment.replace(/"/g, '\\"')}"`;
  * @returns {Object} Analysis result with isProblematic, reason, and suggestion
  */
 export async function analyzeComment(comment, imageDescription = null) {
-  // Check if Prompt API is available
-  if (isPromptApiAvailable()) {
+  // Check if Prompt API is available and ready
+  const promptApiStatus = await checkPromptApiAvailability();
+  
+  if (promptApiStatus.available && promptApiStatus.ready) {
     try {
-      console.log('🔬 Attempting clientside AI comment analysis with Prompt API...');
+      // Attempt clientside AI comment analysis with Prompt API
       const analysis = await analyzeClientComment(comment, imageDescription);
-      console.log('✅ Clientside AI comment analysis successful');
       return analysis;
     } catch (error) {
-      console.warn('⚠️ Clientside AI comment analysis failed, falling back to serverside AI:', error.message);
       // Fall through to Gemini fallback
+      console.warn('⚠️ Clientside AI comment analysis failed, falling back to serverside AI:', error.message);
     }
+  } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
+    console.log('⬇️ Prompt API needs model download, using serverside AI for comment analysis');
   } else {
     console.log('ℹ️ Prompt API not available, using serverside AI for comment analysis');
   }
   
   // Fallback to Gemini using the existing function
-  console.log('☁️ Using serverside Gemini AI for comment analysis...');
   const analysis = await analyzeCommentWithGemini(comment, imageDescription);
-  console.log('✅ Serverside AI comment analysis successful');
   return analysis;
 }
 
