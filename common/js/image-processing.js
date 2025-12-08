@@ -130,8 +130,21 @@ export async function generateAltText(imageData) {
     // Get the DOM img element that contains the image
     const imgElement = getElement('previewImg');
     
-    // Call the injected AI generator with the DOM element
-    const altText = await aiGenerator(imgElement, currentAnalysisController);
+    // Call the injected AI generator with appropriate parameter based on generator signature
+    // Support both data URL (01multimodal-ai) and DOM element (02hybrid-ai) interfaces
+    let altText;
+    try {
+      // Try with DOM element first (02hybrid-ai style)
+      altText = await aiGenerator(imgElement, currentAnalysisController);
+    } catch (error) {
+      // If it fails due to parameter validation, try with imageData (01multimodal-ai style)
+      if (error.message.includes('HTMLImageElement') || error.message.includes('Valid image data URL is required')) {
+        altText = await aiGenerator(imageData, currentAnalysisController);
+      } else {
+        throw error;
+      }
+    }
+    
     
     if (altText) {
       currentAltText = altText;
