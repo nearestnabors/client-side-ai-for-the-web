@@ -8,7 +8,6 @@ import { loadApiKey, setupApiKeyEventListeners } from '../../common/js/api-key.j
 import { setupEventListeners, updateUIState } from '../../common/js/ui-helpers.js';
 import { setAIGenerator } from '../../common/js/image-processing.js';
 import { generateAltText } from './alt-text-gen.js';
-import { checkPromptApiAvailability } from './clientside-ai-helpers.js';
 // Import comment moderation module which includes UI handlers
 import './comment-moderation.js';
 
@@ -24,18 +23,7 @@ const FADE_IN_DELAY_MS = 200; // Delay before container fade-in animation
 window.addEventListener('load', async () => {
   // Configure AI generator via dependency injection
   setAIGenerator(generateAltText);
-  
-  // Check Prompt API availability with proper status checking
-  const promptApiStatus = await checkPromptApiAvailability();
-  
-  if (promptApiStatus.available && promptApiStatus.ready) {
-    // Prompt API is ready - hybrid mode enabled
-  } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
-    console.log('⬇️ Prompt API available but model needs download. Using serverside AI for now.');
-  } else {
-    console.log('ℹ️ Prompt API not available:', promptApiStatus.reason || 'Unknown reason');
-  }
-  
+    
   // Load saved API key from storage (still needed for Gemini fallback)
   loadApiKey();
   

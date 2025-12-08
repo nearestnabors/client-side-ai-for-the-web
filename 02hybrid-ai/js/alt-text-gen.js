@@ -175,23 +175,20 @@ export async function generateAltText(imgElement, controller) {
   
   if (promptApiStatus.available && promptApiStatus.ready) {
     try {
-      console.log('🔬 Attempting clientside AI analysis with Prompt API...');
+      // Attempting clientside AI analysis with Prompt API...
       const altText = await generateClientAltText(imgElement, controller);
-      console.log('✅ Clientside AI analysis successful');
       return altText;
     } catch (error) {
-      console.warn('⚠️ Clientside AI failed, falling back to serverside AI:', error.message);
       // Fall through to Gemini fallback
+      console.warn('⚠️ Clientside AI failed, falling back to serverside AI:', error.message);
     }
   } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
-    console.log('⬇️ Prompt API needs model download, using serverside AI');
+    console.log('⬇️ Prompt API needs model download, using serverside AI to generate alt text');
   } else {
-    console.log('ℹ️ Prompt API not available, using serverside AI');
+    console.log('ℹ️ Prompt API not available, using serverside AI to generate alt text');
   }
   
-  // Fallback to Gemini using the existing function
-  console.log('☁️ Using serverside Gemini AI for image analysis...');
+  // Fallback to serverside Gemini AI for image analysis...
   const altText = await generateGeminiAltText(imgElement, controller);
-  console.log('✅ Serverside AI analysis successful');
   return altText;
 }
