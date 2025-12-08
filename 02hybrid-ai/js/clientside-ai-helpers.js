@@ -3,6 +3,9 @@
  * Utilities for working with Chrome's Prompt API and fallback responses
  */
 
+// Cache for Prompt API availability check (per session)
+let promptApiAvailabilityCache = null;
+
 /**
  * Parses Prompt API response structure consistently
  * @param {string} responseText - The response text from Prompt API
@@ -30,17 +33,23 @@ export function parsePromptApiResponse(responseText, context = 'API call') {
 
 /**
  * Checks if Prompt API is available and ready in the current browser
- * Based on your working implementation
+ * Caches the result per session to avoid repeated checks
  * @returns {Promise<Object>} - Status object with availability info
  */
 export async function checkPromptApiAvailability() {
+  // Return cached result if already checked this session
+  if (promptApiAvailabilityCache !== null) {
+    return promptApiAvailabilityCache;
+  }
+
   // Step 1: Check if the API exists at all
   if (!window.LanguageModel) {
     console.log('❌ Prompt API not supported in this browser');
-    return { 
+    promptApiAvailabilityCache = { 
       available: false, 
       reason: 'Prompt API not supported in this browser' 
     };
+    return promptApiAvailabilityCache;
   }
 
   try {
@@ -54,29 +63,35 @@ export async function checkPromptApiAvailability() {
       case 'readily':
       case 'available':
         // Model is downloaded and ready to use
-        return { available: true, ready: true };
+        promptApiAvailabilityCache = { available: true, ready: true };
+        break;
         
       case 'after-download':
         // API exists but model needs to download first
-        return { 
+        promptApiAvailabilityCache = { 
           available: true, 
           ready: false, 
           needsDownload: true 
         };
+        break;
         
       case 'no':
       default:
         // API exists but model isn't available on this device
-        return { 
+        promptApiAvailabilityCache = { 
           available: false, 
           reason: 'Model not available on this device' 
         };
+        break;
     }
+    
+    return promptApiAvailabilityCache;
   } catch (error) {
-    return { 
+    promptApiAvailabilityCache = { 
       available: false, 
       reason: `Error checking capabilities: ${error.message}` 
     };
+    return promptApiAvailabilityCache;
   }
 }
 
