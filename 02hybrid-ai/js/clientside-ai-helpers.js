@@ -54,12 +54,10 @@ export async function checkPromptApiAvailability() {
       case 'readily':
       case 'available':
         // Model is downloaded and ready to use
-        console.log('✅ Prompt API ready for use!');
         return { available: true, ready: true };
         
       case 'after-download':
         // API exists but model needs to download first
-        console.log('⬇️ Prompt API available but needs model download');
         return { 
           available: true, 
           ready: false, 
@@ -69,7 +67,6 @@ export async function checkPromptApiAvailability() {
       case 'no':
       default:
         // API exists but model isn't available on this device
-        console.log('❌ Model not available on this device, status:', capabilities.available);
         return { 
           available: false, 
           reason: 'Model not available on this device' 
