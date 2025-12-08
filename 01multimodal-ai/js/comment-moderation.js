@@ -211,7 +211,6 @@ export async function submitSuggestion() {
   
   if (!suggestedText) return;
   
-  console.log('🔒 Re-evaluating comment before posting to prevent bypass...');
   
   // SECURITY: Re-evaluate the comment before posting to prevent toxic content bypass
   // Hide form and show processing UI just like initial submission
@@ -237,7 +236,6 @@ export async function submitSuggestion() {
     }
     
     // Comment passed re-evaluation - post it
-    console.log('✅ Comment passed re-evaluation, posting...');
     addComment(suggestedText);
     
     // Show success notification and reset form

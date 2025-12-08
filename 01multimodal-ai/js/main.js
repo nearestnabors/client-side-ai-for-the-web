@@ -3,8 +3,6 @@
  * Coordinates the loading and setup of all app features
  */
 
-console.log('🚀 01multimodal-ai main.js loading...');
-
 import { loadApiKey, setupApiKeyEventListeners } from '../../common/js/api-key.js';
 import { setupEventListeners, updateUIState } from '../../common/js/ui-helpers.js';
 import { setAIGenerator } from '../../common/js/image-processing.js';
@@ -21,29 +19,22 @@ const FADE_IN_DELAY_MS = 200; // Delay before container fade-in animation
  * Sets up all modules and loads saved data
  */
 window.addEventListener('load', () => {
-  console.log('🔧 Configuring AI generator...');
   // Configure AI generator via dependency injection
   setAIGenerator(generateGeminiAltText);
   
-  console.log('🔑 Loading API key...');
   // Load saved API key from storage
   loadApiKey();
   
-  console.log('🎧 Setting up API key listeners...');
   // Set up API key event listeners first (these don't depend on other modules)
   setupApiKeyEventListeners();
   
   // Defer other event listeners to ensure all modules are loaded
   setTimeout(() => {
-    console.log('🎧 Setting up main event listeners...');
     // Set up all event listeners
     setupEventListeners();
     
-    console.log('🎨 Updating UI state...');
     // Update UI based on current state
     updateUIState();
-    
-    console.log('✅ Application initialization complete');
   }, INIT_DELAY_MS);
   
   // Fade in the container after initialization with a slight delay
