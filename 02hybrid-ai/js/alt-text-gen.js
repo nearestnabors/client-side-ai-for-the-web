@@ -77,6 +77,11 @@ async function generateGeminiAltText(imgElement, controller) {
     throw new Error('Valid HTMLImageElement is required');
   }
   
+  // Check if operation was aborted before proceeding
+  if (controller.signal.aborted) {
+    throw new Error('Operation was cancelled');
+  }
+  
   // Extract image data URL from DOM element
   const imageData = imgElement.src;
   if (typeof imageData !== 'string' || !imageData.startsWith('data:image/')) {
@@ -179,13 +184,22 @@ export async function generateAltText(imgElement, controller) {
       const altText = await generateClientAltText(imgElement, controller);
       return altText;
     } catch (error) {
-      // Fall through to Gemini fallback
+      // If operation was aborted, don't fallback - just rethrow
+      if (error.name === 'AbortError' || controller.signal.aborted) {
+        throw error;
+      }
+      // Fall through to Gemini fallback for other errors
       console.warn('⚠️ Clientside AI failed, falling back to serverside AI:', error.message);
     }
   } else if (promptApiStatus.available && promptApiStatus.needsDownload) {
     console.log('⬇️ Prompt API needs model download, using serverside AI to generate alt text');
   } else {
     console.log('ℹ️ Prompt API not available, using serverside AI to generate alt text');
+  }
+  
+  // Check if operation was aborted before attempting Gemini fallback
+  if (controller.signal.aborted) {
+    throw new Error('Operation was cancelled');
   }
   
   // Fallback to serverside Gemini AI for image analysis...
